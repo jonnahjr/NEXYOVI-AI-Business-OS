@@ -262,8 +262,15 @@ export class GenericModuleService {
       if (!userId) {
         const email = employeeData.personalEmail || employeeData.workEmail || `${employeeData.employeeCode}@nexyovi.com`;
         // Check if user with this email already exists
-        const existingUser = await this.prisma.user.findUnique({ where: { email } });
+        const existingUser = await this.prisma.user.findUnique({ 
+          where: { email },
+          include: { employee: true }
+        });
+        
         if (existingUser) {
+          if (existingUser.employee) {
+            throw new Error(`A user with email ${email} is already linked to an employee record.`);
+          }
           userId = existingUser.id;
         } else {
           const newUser = await this.prisma.user.create({
@@ -277,6 +284,12 @@ export class GenericModuleService {
             }
           });
           userId = newUser.id;
+        }
+      } else {
+        // If userId was provided, check if it already has an employee
+        const existingEmp = await this.prisma.employee.findUnique({ where: { userId } });
+        if (existingEmp) {
+          throw new Error(`The provided user ID is already linked to an employee record.`);
         }
       }
 
