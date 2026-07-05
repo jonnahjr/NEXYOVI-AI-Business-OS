@@ -118,13 +118,13 @@ export default function UltimateEmployeeManager({ onBack }: { onBack: () => void
     nationalId: "", passportNumber: "",
     profilePhoto: "",
     // 2. Contact
-    personalPhone: "", alternativePhone: "",
+    personalPhone: "", workPhone: "",
     personalEmail: "", workEmail: "",
     address: "", city: "", region: "", country: "Ethiopia", postalCode: "",
     emergencyName: "", emergencyPhone: "", emergencyRelation: "",
     // 3. Employment
     status: "ACTIVE", employmentType: "FULL_TIME",
-    employeeNumber: "", hireDate: "",
+    hireDate: "",
     departmentId: "", jobTitle: "", managerId: "",
     branchOffice: "", workLocation: "", workShift: "", gradeLevel: "", costCenter: "",
     // 4. Payroll
@@ -313,14 +313,15 @@ export default function UltimateEmployeeManager({ onBack }: { onBack: () => void
                     />
                   </div>
                 </Field>
-                <Field label="Alternative Phone">
-                  <div className="hr-phone">
-                    <PhoneInput
-                      country="et"
-                      value={formData.alternativePhone}
-                      onChange={val => set("alternativePhone", val)}
-                      inputStyle={{ width: "100%", height: "46px", border: "1px solid rgba(0,0,0,0.2)", borderRadius: "0.375rem", fontSize: "14px", fontFamily: "inherit" }}
-                      buttonStyle={{ border: "1px solid rgba(0,0,0,0.2)", borderRight: "none", borderRadius: "0.375rem 0 0 0.375rem", background: "rgba(0,0,0,0.05)" }}
+                    <Field label="Work Phone / Alternative Phone">
+                      <div className="hr-phone">
+                        <PhoneInput
+                          country="et"
+                          value={formData.workPhone}
+                          onChange={val => set("workPhone", val)}
+                          inputStyle={{ width: "100%", height: "46px", border: "1px solid rgba(0,0,0,0.2)", borderRadius: "0.375rem", fontSize: "14px", fontFamily: "inherit" }}
+                          buttonStyle={{ border: "1px solid rgba(0,0,0,0.2)", borderRight: "none", borderRadius: "0.375rem 0 0 0.375rem", background: "rgba(0,0,0,0.05)" }}
+
                       dropdownStyle={{ borderRadius: "0.375rem", border: "1px solid rgba(0,0,0,0.2)", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}
                       containerStyle={{ width: "100%" }}
                       enableSearch
