@@ -219,11 +219,41 @@ export class GenericModuleService {
       if (!employeeData.lastName)     throw new Error('lastName is required');
       if (!employeeData.hireDate)     employeeData.hireDate = new Date();
 
-      // Strip per-item UI-only fields from sub-arrays
-      const cleanEducations = (educations || []).map(({ certificateFileName, ...e }: any) => e);
-      const cleanExperiences = (experiences || []).map(({ referenceFileName, ...e }: any) => e);
+      // Sanitize relation IDs to ensure they are valid UUIDs
+      const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/i;
+      if (employeeData.departmentId && !uuidRegex.test(employeeData.departmentId)) {
+        employeeData.departmentId = null;
+      }
+      if (employeeData.managerId && !uuidRegex.test(employeeData.managerId)) {
+        employeeData.managerId = null;
+      }
+
+
+      // Strip per-item UI-only fields from sub-arrays and map schema differences
+      const cleanEducations = (educations || []).map(({ certificateFileName, graduationYear, endDate, ...e }: any) => {
+        let finalEndDate: Date | null = null;
+        if (endDate) finalEndDate = new Date(endDate);
+        else if (graduationYear) finalEndDate = new Date(graduationYear);
+        return {
+          ...e,
+          endDate: finalEndDate,
+          gpa: e.gpa ? parseFloat(e.gpa) : null
+        };
+      });
+
+      const cleanExperiences = (experiences || []).map(({ referenceFileName, referenceUrl, ...e }: any) => ({
+        ...e,
+        startDate: e.startDate ? new Date(e.startDate) : null,
+        endDate: e.endDate ? new Date(e.endDate) : null,
+      }));
+
       const cleanSkills = (skills || []);
-      const cleanChildren = (children || []);
+      const cleanChildren = (children || []).map((e: any) => ({
+        ...e,
+        dateOfBirth: e.dateOfBirth ? new Date(e.dateOfBirth) : null,
+        gender: GENDER_MAP[(e.gender as string)?.toLowerCase()] ?? 'UNSPECIFIED'
+      }));
+
       const cleanCertifications = (certifications || []);
       const cleanDocs = (empDocuments || []);
 
