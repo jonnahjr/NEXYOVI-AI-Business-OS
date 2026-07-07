@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXYOVI — Africa's Engineering Partner</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      overflow-x: hidden;
+    }
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: #c8a454; border-radius: 3px; }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 2rem;
+      text-align: center;
+      background: radial-gradient(ellipse at 30% 20%, rgba(200,164,84,0.08) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 80%, rgba(200,164,84,0.05) 0%, transparent 50%),
+                  #0a0a0a;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L36 20H60L40 32L45 54L30 40L15 54L20 32L0 20H24Z' fill='%23c8a454' opacity='0.03'/%3E%3C/svg%3E") repeat;
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1.2rem;
+      border: 1px solid rgba(200,164,84,0.3);
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #c8a454;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 2.5rem;
+      animation: fadeDown 0.8s ease-out;
+    }
+    .hero h1 {
+      font-size: clamp(2.8rem, 8vw, 6rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      max-width: 900px;
+      animation: fadeUp 0.8s ease-out 0.2s both;
+    }
+    .hero h1 .gold { color: #c8a454; }
+    .hero p {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: #888;
+      font-weight: 400;
+      max-width: 620px;
+      margin-top: 1.5rem;
+      line-height: 1.7;
+      animation: fadeUp 0.8s ease-out 0.4s both;
+    }
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2.5rem;
+      animation: fadeUp 0.8s ease-out 0.6s both;
+    }
+    .btn {
+      padding: 0.9rem 2.2rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: #c8a454;
+      color: #0a0a0a;
+    }
+    .btn-primary:hover { background: #dbb86a; transform: translateY(-2px); }
+    .btn-outline {
+      background: transparent;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .btn-outline:hover { border-color: #c8a454; color: #c8a454; transform: translateY(-2px); }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      color: #555;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      animation: bounce 2s infinite;
+    }
+    .scroll-indicator span { width: 1px; height: 30px; background: #c8a454; }
+
+    /* ── Sections ── */
+    section { padding: 6rem 2rem; max-width: 1200px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #c8a454;
+      margin-bottom: 0.8rem;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .section-sub {
+      color: #777;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      max-width: 600px;
+    }
+
+    /* ── Services Grid ── */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    .service-card {
+      background: #111;
+      border: 1px solid #1a1a1a;
+      border-radius: 16px;
+      padding: 2rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 3px;
+      background: #c8a454;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+    .service-card:hover::before { transform: scaleX(1); }
+    .service-card:hover { border-color: #c8a45433; transform: translateY(-4px); }
+    .service-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      background: rgba(200,164,84,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 1.2rem;
+    }
+    .service-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+    .service-card p { font-size: 0.85rem; color: #777; line-height: 1.6; }
+
+    /* ── Stats ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+      padding: 3rem;
+      background: #111;
+      border-radius: 20px;
+      border: 1px solid #1a1a1a;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: #c8a454;
+      letter-spacing: -0.03em;
+    }
+    .stat-label { font-size: 0.8rem; color: #666; margin-top: 0.3rem; font-weight: 500; }
+
+    /* ── Values ── */
+    .values {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+    .value-item {
+      padding: 2rem;
+      border-left: 2px solid #1a1a1a;
+      transition: border-color 0.3s;
+    }
+    .value-item:hover { border-left-color: #c8a454; }
+    .value-item h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .value-item p { font-size: 0.85rem; color: #777; line-height: 1.6; }
+
+    /* ── CTA ── */
+    .cta-section {
+      text-align: center;
+      padding: 6rem 2rem;
+      background: radial-gradient(ellipse at center, rgba(200,164,84,0.06) 0%, transparent 70%);
+    }
+    .cta-section h2 { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800; }
+    .cta-section p { color: #777; margin: 1rem auto 2rem; max-width: 500px; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid #1a1a1a;
+      padding: 2rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #444;
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50%      { transform: translateX(-50%) translateY(8px); }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      section { padding: 4rem 1.2rem; }
+      .hero-cta { flex-direction: column; align-items: center; }
+      .stats { padding: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  HERO                                                -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section class="hero">
+    <div class="hero-badge">✦ Founded 2024 · Addis Ababa, Ethiopia</div>
+    <h1>
+      The engineering partner<br>
+      <span class="gold">Africa's fastest companies</span><br>
+      trust to build & ship.
+    </h1>
+    <p>
+      NEXYOVI is a multi-disciplinary technology powerhouse delivering 
+      senior-grade engineering, AI, and infrastructure solutions — 
+      rooted in Addis Ababa, deployed globally.
+    </p>
+    <div class="hero-cta">
+      <a href="#services" class="btn btn-primary">Explore Services</a>
+      <a href="#about" class="btn btn-outline">About Us</a>
+    </div>
+    <div class="scroll-indicator">
+      <span></span>
+      Scroll
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  SERVICES                                             -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="services">
+    <div class="section-label">✧ What We Do</div>
+    <h2 class="section-title">Full-stack engineering for<br>the modern enterprise</h2>
+    <p class="section-sub">
+      From AI agents to cloud infrastructure, we ship mission-critical 
+      products for startups, governments, and global enterprises.
+    </p>
+
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon">🤖</div>
+        <h3>AI & Automation</h3>
+        <p>Intelligent agents, machine learning pipelines, and process automation tailored for African business realities.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">⚡</div>
+        <h3>Software Engineering</h3>
+        <p>End-to-end product development — web, mobile, and backend systems built by senior engineers, not juniors.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🔒</div>
+        <h3>Cybersecurity</h3>
+        <p>Enterprise-grade security audits, penetration testing, and infrastructure hardening to protect your digital assets.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">☁️</div>
+        <h3>Cloud Infrastructure</h3>
+        <p>Scalable cloud architecture, DevOps pipelines, and managed infrastructure on AWS, GCP, and Azure.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🗺️</div>
+        <h3>NexiLocate</h3>
+        <p>AI-driven location and mapping technology for business discovery, navigation, and location-based applications.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🌐</div>
+        <h3>Enterprise Networking</h3>
+        <p>Design, optimization, and management of enterprise-grade network infrastructure for organizations of any scale.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  STATS                                                -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num">2024</div>
+        <div class="stat-label">Founded</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">50+</div>
+        <div class="stat-label">Engineers</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">6</div>
+        <div class="stat-label">Service Pillars</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">🌍</div>
+        <div class="stat-label">Global Reach</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  ABOUT / VALUES                                       -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="about">
+    <div class="section-label">✧ Our DNA</div>
+    <h2 class="section-title">Senior engineering,<br>rooted in Addis Ababa</h2>
+    <p class="section-sub">
+      We believe Africa's best technology talent deserves to build world-class 
+      products without leaving the continent. Every engagement is led by 
+      senior engineers who own outcomes end-to-end.
+    </p>
+
+    <div class="values">
+      <div class="value-item">
+        <h3>Senior-Only Teams</h3>
+        <p>No junior-staffing models. Every engineer on your project has years of production experience shipping at scale.</p>
+      </div>
+      <div class="value-item">
+        <h3>Partnership-First</h3>
+        <p>We embed with your team as true partners — sharing context, risk, and ownership of the outcome.</p>
+      </div>
+      <div class="value-item">
+        <h3>Built for Africa</h3>
+        <p>Our solutions are designed for the unique infrastructure, regulatory, and market realities of the continent.</p>
+      </div>
+      <div class="value-item">
+        <h3>End-to-End Delivery</h3>
+        <p>From strategy and architecture through implementation, testing, and ongoing managed operations.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  CTA                                                  -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="cta-section">
+    <h2>Ready to build Africa's<br>digital future?</h2>
+    <p>Whether you're a startup scaling your product or an enterprise undergoing digital transformation — we're your engineering partner.</p>
+    <a href="https://www.nexyovi.com" target="_blank" class="btn btn-primary">Visit nexyovi.com →</a>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  FOOTER                                               -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <footer>
+    <p>NEXYOVI Technologies · Addis Ababa, Ethiopia · Founded 2024</p>
+    <p style="margin-top: 0.5rem; color: #333;">Building Ethiopia's Digital Future</p>
+  </footer>
+
+</body>
+</html>

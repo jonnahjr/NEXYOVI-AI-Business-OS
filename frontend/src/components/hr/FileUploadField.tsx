@@ -67,7 +67,7 @@ export default function FileUploadField({ label, value, onChange, required, acce
 
       {value ? (
         <div className="flex items-center gap-3 border border-black/20 rounded-md px-4 py-3 bg-black/[0.02] group">
-          <CheckCircle size={16} className="text-green-600 shrink-0" />
+          <CheckCircle size={16} className="text-black shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-black truncate">{fileName || "File uploaded"}</p>
             <a href={value} target="_blank" rel="noopener noreferrer" className="text-xs text-black/50 hover:text-black underline transition truncate block">
@@ -87,12 +87,12 @@ export default function FileUploadField({ label, value, onChange, required, acce
         >
           {uploading ? (
             <>
-              <Loader2 size={20} className="animate-spin text-black/50" />
+              <Loader2 size={20} className="animate-spin text-black" />
               <span className="text-xs font-semibold text-black/50">Uploading...</span>
             </>
           ) : (
             <>
-              <Upload size={18} className="text-black/40" />
+              <Upload size={18} className="text-black" />
               <span className="text-xs font-semibold text-black/60">Click to upload</span>
               <span className="text-[10px] text-black/40">PDF, JPG, PNG, DOCX — max 10MB</span>
             </>

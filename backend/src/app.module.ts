@@ -30,6 +30,7 @@ import { VendorModule } from './vendor/vendor.module';
 import { FleetModule } from './fleet/fleet.module';
 import { GenericModuleModule } from './generic-module/generic-module.module';
 import { UploadModule } from './upload/upload.module';
+import { AttendanceModule } from './attendance/attendance.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { UploadModule } from './upload/upload.module';
     FleetModule,
     GenericModuleModule,
     UploadModule,
+    AttendanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

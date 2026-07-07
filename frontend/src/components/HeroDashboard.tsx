@@ -18,7 +18,7 @@ const containerVariants = {
 };
 const itemVariants = {
   hidden: { y: 16, opacity: 0 },
-  show: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 300, damping: 26 } }
+  show: { y: 0, opacity: 1, transition: { type: "spring" as const, stiffness: 300, damping: 26 } }
 };
 
 const pillars = [
@@ -56,7 +56,7 @@ export default function HeroDashboard({ user }: { user: any }) {
           transition={{ duration: 0.7, ease: "easeOut" }}
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-slate-50 mb-8 text-slate-500 text-xs font-semibold uppercase tracking-widest shadow-sm">
-            <Shield size={13} />
+            <Shield size={13} className="text-black" />
             NEXYOVI AI OS · 19 Pillars · 500+ Features
           </div>
 

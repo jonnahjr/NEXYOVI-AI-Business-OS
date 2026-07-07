@@ -159,7 +159,7 @@ export default function DemoModal({ onClose }: { onClose: () => void }) {
             onClick={onClose}
             className="absolute top-6 right-6 w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors"
           >
-            <X size={16} className="text-primary" />
+            <X size={16} className="text-black" />
           </button>
 
           {!submitted ? (
@@ -194,7 +194,7 @@ export default function DemoModal({ onClose }: { onClose: () => void }) {
                       >
                         <FlagIcon iso={selectedCountry.iso} className="w-5 h-4 rounded-sm object-cover" />
                         <span className="text-xs font-mono">{selectedCountry.code}</span>
-                        <ChevronDown size={12} className="text-slate-400" />
+                        <ChevronDown size={12} className="text-black" />
                       </button>
 
                       {showCountryDropdown && (
@@ -317,7 +317,7 @@ export default function DemoModal({ onClose }: { onClose: () => void }) {
               className="flex flex-col items-center text-center py-8"
             >
               <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mb-6">
-                <CheckCircle size={32} className="text-emerald-500" />
+                <CheckCircle size={32} className="text-black" />
               </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight">Request Received!</h2>
               <p className="text-slate-500 font-light text-sm max-w-xs">

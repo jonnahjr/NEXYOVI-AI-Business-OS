@@ -43,7 +43,7 @@ export default function Landing({ user }: { user: any }) {
           className="relative z-10 w-full max-w-5xl mx-auto"
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-white/50 backdrop-blur-sm mb-8 text-slate-600 text-xs font-semibold uppercase tracking-widest shadow-sm">
-            <Sparkles size={13} className="text-primary" />
+            <Sparkles size={13} className="text-black" />
             SASA AI Business Operating System
           </div>
 
@@ -67,7 +67,7 @@ export default function Landing({ user }: { user: any }) {
               onClick={() => setShowDemo(true)}
               className="px-8 py-4 rounded-full bg-white border border-slate-200 hover:border-slate-300 text-slate-900 font-medium transition-all flex items-center gap-2 shadow-sm text-lg"
             >
-              <Play size={16} className="text-primary" /> Watch Demo
+              <Play size={16} className="text-black" /> Watch Demo
             </button>
           </div>
 
@@ -94,7 +94,7 @@ export default function Landing({ user }: { user: any }) {
             </div>
             <div className="p-6 md:p-8 flex items-start gap-4 text-left">
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <BrainCircuit size={20} className="text-primary" />
+                <BrainCircuit size={20} className="text-black" />
               </div>
               <div className="flex-1">
                 <AnimatePresence mode="wait">
@@ -165,7 +165,7 @@ export default function Landing({ user }: { user: any }) {
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white/80 text-xs font-semibold uppercase tracking-widest mb-6 border border-white/20">
-              <Sparkles size={12} className="text-primary" /> Magic Action
+              <Sparkles size={12} className="text-white" /> Magic Action
             </div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 leading-tight">
               Don't click menus.<br/>Just ask SASA.
@@ -180,7 +180,7 @@ export default function Landing({ user }: { user: any }) {
                 "Instant cross-module reporting"
               ].map((item, i) => (
                 <li key={i} className="flex items-center gap-3 text-slate-300 font-light">
-                  <CheckCircle2 className="text-primary" size={20} /> {item}
+                  <CheckCircle2 className="text-white" size={20} /> {item}
                 </li>
               ))}
             </ul>
@@ -189,7 +189,7 @@ export default function Landing({ user }: { user: any }) {
           {/* Mock Interactive Window */}
           <div className="bg-slate-800 rounded-3xl border border-white/10 shadow-2xl p-6 relative z-10">
             <div className="bg-slate-900 rounded-2xl p-4 flex items-center gap-3 mb-6 border border-white/5">
-              <MessageSquare className="text-slate-500" size={20} />
+              <MessageSquare className="text-white" size={20} />
               <span className="text-slate-300 flex-1 font-mono text-sm">Create payroll for June, include bonuses</span>
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                 <ArrowRight size={14} className="text-black" />
@@ -237,7 +237,7 @@ export default function Landing({ user }: { user: any }) {
               >
                 <div className="flex items-center gap-4">
                   <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                    <Sparkles size={16} className="text-primary" />
+                    <Sparkles size={16} className="text-black" />
                   </div>
                   <div>
                     <div className="text-sm font-bold text-primary">Payroll Draft Ready</div>
@@ -290,7 +290,7 @@ export default function Landing({ user }: { user: any }) {
           ].map((f, i) => (
             <Link key={i} href={`/dashboard/${f.slug}`} className="flex flex-col items-center gap-3 group cursor-pointer">
               <div className="w-16 h-16 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/30 transition-all group-hover:scale-110">
-                <f.icon size={28} className="text-black group-hover:text-primary transition-colors" />
+                <f.icon size={28} className="text-black" />
               </div>
               <span className="text-sm font-bold text-black">{f.label}</span>
             </Link>

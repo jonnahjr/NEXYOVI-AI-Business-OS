@@ -1,0 +1,82 @@
+{
+  "employeeCode": "NXV-EMP-0001",
+  "firstName": "yonas",
+  "middleName": "sitotaw",
+  "lastName": "bogale",
+  "gender": "MALE",
+  "dateOfBirth": "2001-06-15T00:00:00.000Z",
+  "nationality": "Ethiopian",
+  "maritalStatus": "SINGLE",
+  "nationalId": "5464565454747",
+  "passportNumber": "542365",
+  "profilePhoto": null,
+  "personalPhone": "251938617252",
+  "personalEmail": "jonasjjonas14@gmail.com",
+  "workEmail": "jonasjjonas14@gmail.com",
+  "address": "bethel",
+  "city": "Addis Ababa",
+  "region": "Addis Ababa",
+  "country": "Ethiopia",
+  "postalCode": "1000",
+  "emergencyName": "yonas sitotaw bogale",
+  "emergencyPhone": "251938617252",
+  "emergencyRelation": "Parent",
+  "status": "ACTIVE",
+  "employmentType": "FULL_TIME",
+  "hireDate": "2026-07-15T00:00:00.000Z",
+  "departmentId": "Engineering",
+  "jobTitle": "Full-stack Developer",
+  "managerId": "alemu balecha",
+  "branchOffice": "Head Office (HQ)",
+  "workLocation": "Addis Ababa (HQ)",
+  "workShift": "Split Shift",
+  "gradeLevel": "L9 - C-Level",
+  "costCenter": "CC-ENG-1001",
+  "salary": 100000,
+  "salaryType": "MONTHLY",
+  "paymentMethod": "Bank Transfer",
+  "bankName": "Commercial Bank of Ethiopia (CBE)",
+  "bankAccount": "10002532568563",
+  "accountHolderName": "hgvhf  hgfhgjgjkhgjh",
+  "taxId": "7576575786987",
+  "pensionId": "568765956",
+  "currency": "ETB",
+  "allowances": 0,
+  "bonuses": 0,
+  "annualLeaveBalance": 24,
+  "sickLeaveBalance": 25,
+  "maternityLeave": 17,
+  "paternityLeave": 10,
+  "unpaidLeaveBalance": 11,
+  "compassionateLeave": 6,
+  "otherLeaveTypes": null,
+  "companyId": "43065973-677b-45a7-b9ae-2035bda03346",
+  "userId": "02d2fd61-1772-4cd7-b9a6-60581666c2fc",
+  "educations": [
+    {
+      "degree": "High School / GED",
+      "institution": "hgfuyt fytfty",
+      "fieldOfStudy": "",
+      "graduationYear": "2024-06-05",
+      "gpa": "4.0",
+      "certificateUrl": ""
+    }
+  ],
+  "experiences": [
+    {
+      "companyName": "fdhgfhfgdsh",
+      "position": "hdfshgshh",
+      "startDate": "2025-02-05",
+      "endDate": "2026-07-01",
+      "responsibilities": "hghgfhgfh",
+      "referenceUrl": ""
+    }
+  ],
+  "skills": [
+    {
+      "skillName": "hghh",
+      "skillType": "Soft",
+      "proficiency": "Advanced"
+    }
+  ]
+}

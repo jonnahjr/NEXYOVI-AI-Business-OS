@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import FileUploadField from "./FileUploadField";
+import { useToast } from "@/components/ui/Toast";
 
 
 const inputClass = "w-full border border-black/20 bg-white p-3 rounded-md text-sm text-black focus:border-black focus:ring-1 focus:ring-black outline-none transition placeholder:text-black/40";
@@ -106,11 +107,17 @@ function DynamicList({ title, items, onAdd, onRemove, empty, children }: {
   );
 }
 
-export default function UltimateEmployeeManager({ onBack }: { onBack: () => void }) {
+export default function UltimateEmployeeManager({ onBack, initialData, employeeId, readOnly }: {
+  onBack: () => void;
+  initialData?: any;
+  employeeId?: string;
+  readOnly?: boolean;
+}) {
   const [activeTab, setActiveTab] = useState("personal");
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
-  const [formData, setFormData] = useState<any>({
+  const defaultFormData = {
     // 1. Personal
     employeeCode: "",
     firstName: "", middleName: "", lastName: "",
@@ -145,9 +152,31 @@ export default function UltimateEmployeeManager({ onBack }: { onBack: () => void
     unpaidLeaveBalance: 0,
     compassionateLeave: 0,
     otherLeaveTypes: "",
-  });
+  };
+
+  // Helper: replace null values with empty string to avoid React "value should not be null" warning
+  const sanitize = (obj: any) => {
+    if (!obj || typeof obj !== 'object') return obj;
+    const result: any = {};
+    for (const [k, v] of Object.entries(obj)) {
+      result[k] = v === null || v === undefined ? '' : v;
+    }
+    return result;
+  };
+
+  const [formData, setFormData] = useState<any>(initialData ? {
+    ...defaultFormData,
+    ...sanitize(initialData),
+    educations: initialData.educations || [],
+    experiences: initialData.experiences || [],
+    skills: initialData.skills || [],
+    children: initialData.children || [],
+  } : defaultFormData);
 
   useEffect(() => {
+    // If editing/viewing existing employee, don't auto-generate code
+    if (initialData) return;
+
     let companyAbbr = "NXV";
     let token = "";
     try {
@@ -209,15 +238,22 @@ export default function UltimateEmployeeManager({ onBack }: { onBack: () => void
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token") || "";
-      const res = await fetch("http://localhost:3002/api/v1/modules/human-resources/employee-management", {
-        method: "POST",
+      const isEdit = !!employeeId;
+      const url = isEdit
+        ? `http://localhost:3002/api/v1/modules/human-resources/employee-management/${employeeId}`
+        : "http://localhost:3002/api/v1/modules/human-resources/employee-management";
+      const res = await fetch(url, {
+        method: isEdit ? "PUT" : "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify(formData),
       });
-      if (res.ok) { onBack(); }
-      else { const e = await res.json(); alert(`Failed to save: ${e.message || "Unknown error"}`); }
+      if (res.ok) {
+        toast(isEdit ? "Employee updated successfully" : "Employee created successfully", "success");
+        onBack();
+      }
+      else { const e = await res.json(); toast(e.message || "Failed to save employee", "error"); }
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      toast(`Error: ${err.message}`, "error");
     } finally {
       setIsLoading(false);
     }
@@ -242,14 +278,22 @@ export default function UltimateEmployeeManager({ onBack }: { onBack: () => void
       {/* Header */}
       <div className="flex justify-between items-center mb-8 border-b border-black/10 pb-6">
         <div>
-          <h2 className="text-4xl font-black tracking-tight text-black">Ultimate HR Record</h2>
-          <p className="text-sm text-black/60 mt-1 font-medium">Full 360° Employee Lifecycle Management</p>
+          <h2 className="text-4xl font-black tracking-tight text-black">
+            {readOnly ? "Employee Details" : employeeId ? "Edit Employee" : "Ultimate HR Record"}
+          </h2>
+          <p className="text-sm text-black/60 mt-1 font-medium">
+            {readOnly ? "Viewing full employee information" : employeeId ? "Editing employee record" : "Full 360° Employee Lifecycle Management"}
+          </p>
         </div>
         <div className="flex space-x-3">
-          <button onClick={onBack} className="px-5 py-2.5 border border-black/20 rounded-md text-sm font-semibold hover:bg-black/5 transition text-black">Cancel</button>
-          <button onClick={handleSave} disabled={isLoading} className="px-6 py-2.5 bg-[#F9A230] text-black rounded-md text-sm font-black flex items-center space-x-2 hover:bg-amber-500 transition disabled:opacity-50">
-            <Save size={16} /><span>{isLoading ? "Saving..." : "Save Record"}</span>
+          <button onClick={onBack} className="px-5 py-2.5 border border-black/20 rounded-md text-sm font-semibold hover:bg-black/5 transition text-black">
+            {readOnly ? "Back" : "Cancel"}
           </button>
+          {!readOnly && (
+            <button onClick={handleSave} disabled={isLoading} className="px-6 py-2.5 bg-[#F9A230] text-black rounded-md text-sm font-black flex items-center space-x-2 hover:bg-amber-500 transition disabled:opacity-50">
+              <Save size={16} /><span>{isLoading ? "Saving..." : employeeId ? "Update Record" : "Save Record"}</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -269,6 +313,7 @@ export default function UltimateEmployeeManager({ onBack }: { onBack: () => void
       <div className="flex-1 overflow-y-auto max-w-4xl">
         <AnimatePresence mode="wait">
           <motion.div key={activeTab} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 6 }} transition={{ duration: 0.18 }}>
+            <fieldset disabled={readOnly} className={readOnly ? "opacity-80" : ""}>
 
             {/* ── 1. PERSONAL ──────────────────────────────── */}
             {activeTab === "personal" && (
@@ -432,15 +477,15 @@ export default function UltimateEmployeeManager({ onBack }: { onBack: () => void
               >
                 {(edu, i) => (
                   <div className="grid grid-cols-2 gap-5">
-                    <DropdownWithOther label="Degree / Qualification" name="degree" value={edu.degree} onChange={e => updateList("educations", i, "degree", e.target.value)} options={[
+                    <DropdownWithOther label="Degree / Qualification" name="degree" value={edu.degree} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => updateList("educations", i, "degree", e.target.value)} options={[
                       "High School / GED", "Certificate", "Diploma", "Associate's Degree", "Bachelor's Degree", "Master's Degree", "Doctorate (PhD)"
                     ]} />
-                    <Field label="Institution"><input value={edu.institution} onChange={e => updateList("educations", i, "institution", e.target.value)} className={inputClass} placeholder="Addis Ababa University" /></Field>
-                    <DropdownWithOther label="Field of Study" name="fieldOfStudy" value={edu.fieldOfStudy} onChange={e => updateList("educations", i, "fieldOfStudy", e.target.value)} options={[
+                    <Field label="Institution"><input value={edu.institution} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => updateList("educations", i, "institution", e.target.value)} className={inputClass} placeholder="Addis Ababa University" /></Field>
+                    <DropdownWithOther label="Field of Study" name="fieldOfStudy" value={edu.fieldOfStudy} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => updateList("educations", i, "fieldOfStudy", e.target.value)} options={[
                       "Computer Science / IT", "Engineering", "Business / Management", "Finance / Accounting", "Medicine / Healthcare", "Law", "Arts & Humanities", "Social Sciences", "Natural Sciences", "Education"
                     ]} />
-                    <Field label="Graduation Date" required><input type="date" value={edu.graduationYear} onChange={e => updateList("educations", i, "graduationYear", e.target.value)} className={inputClass} /></Field>
-                    <Field label="GPA / Grade"><input value={edu.gpa} onChange={e => updateList("educations", i, "gpa", e.target.value)} className={inputClass} placeholder="3.8 / 4.0" /></Field>
+                    <Field label="Graduation Date" required><input type="date" value={edu.graduationYear} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => updateList("educations", i, "graduationYear", e.target.value)} className={inputClass} /></Field>
+                    <Field label="GPA / Grade"><input value={edu.gpa} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => updateList("educations", i, "gpa", e.target.value)} className={inputClass} placeholder="3.8 / 4.0" /></Field>
                   </div>
                 )}
               </DynamicList>
@@ -454,13 +499,13 @@ export default function UltimateEmployeeManager({ onBack }: { onBack: () => void
               >
                 {(exp, i) => (
                   <div className="grid grid-cols-2 gap-5">
-                    <Field label="Company Name"><input value={exp.companyName} onChange={e => updateList("experiences", i, "companyName", e.target.value)} className={inputClass} placeholder="Previous Company Ltd." /></Field>
-                    <Field label="Position"><input value={exp.position} onChange={e => updateList("experiences", i, "position", e.target.value)} className={inputClass} placeholder="Software Developer" /></Field>
-                    <Field label="Start Date" required><input type="date" value={exp.startDate} onChange={e => updateList("experiences", i, "startDate", e.target.value)} className={inputClass} /></Field>
-                    <Field label="End Date" required><input type="date" value={exp.endDate} onChange={e => updateList("experiences", i, "endDate", e.target.value)} className={inputClass} /></Field>
+                    <Field label="Company Name"><input value={exp.companyName} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => updateList("experiences", i, "companyName", e.target.value)} className={inputClass} placeholder="Previous Company Ltd." /></Field>
+                    <Field label="Position"><input value={exp.position} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => updateList("experiences", i, "position", e.target.value)} className={inputClass} placeholder="Software Developer" /></Field>
+                    <Field label="Start Date" required><input type="date" value={exp.startDate} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => updateList("experiences", i, "startDate", e.target.value)} className={inputClass} /></Field>
+                    <Field label="End Date" required><input type="date" value={exp.endDate} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => updateList("experiences", i, "endDate", e.target.value)} className={inputClass} /></Field>
                     <div className="col-span-2">
                       <label className={labelClass}>Responsibilities</label>
-                      <textarea value={exp.responsibilities} onChange={e => updateList("experiences", i, "responsibilities", e.target.value)} className={`${inputClass} h-24 resize-none`} placeholder="Key responsibilities and achievements..." />
+                      <textarea value={exp.responsibilities} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => updateList("experiences", i, "responsibilities", e.target.value)} className={`${inputClass} h-24 resize-none`} placeholder="Key responsibilities and achievements..." />
                     </div>
                   </div>
                 )}
@@ -475,9 +520,9 @@ export default function UltimateEmployeeManager({ onBack }: { onBack: () => void
               >
                 {(skill, i) => (
                   <div className="grid grid-cols-3 gap-5">
-                    <Field label="Skill Name"><input value={skill.skillName} onChange={e => updateList("skills", i, "skillName", e.target.value)} className={inputClass} placeholder="JavaScript" /></Field>
+                    <Field label="Skill Name"><input value={skill.skillName} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => updateList("skills", i, "skillName", e.target.value)} className={inputClass} placeholder="JavaScript" /></Field>
                     <Field label="Type">
-                      <select value={skill.skillType} onChange={e => updateList("skills", i, "skillType", e.target.value)} className={inputClass}>
+                      <select value={skill.skillType} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => updateList("skills", i, "skillType", e.target.value)} className={inputClass}>
                         <option value="Technical">Technical</option>
                         <option value="Soft">Soft Skill</option>
                         <option value="Language">Language</option>
@@ -486,7 +531,7 @@ export default function UltimateEmployeeManager({ onBack }: { onBack: () => void
                       </select>
                     </Field>
                     <Field label="Proficiency">
-                      <select value={skill.proficiency} onChange={e => updateList("skills", i, "proficiency", e.target.value)} className={inputClass}>
+                      <select value={skill.proficiency} onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => updateList("skills", i, "proficiency", e.target.value)} className={inputClass}>
                         <option value="">Select</option>
                         <option value="Beginner">Beginner</option>
                         <option value="Intermediate">Intermediate</option>
@@ -562,6 +607,7 @@ export default function UltimateEmployeeManager({ onBack }: { onBack: () => void
               </div>
             )}
 
+            </fieldset>
           </motion.div>
         </AnimatePresence>
       </div>

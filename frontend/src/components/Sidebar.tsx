@@ -20,7 +20,7 @@ export default function Sidebar() {
       <div className="px-6 py-5 sticky top-0 bg-white/90 backdrop-blur-md z-20 border-b border-slate-100">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center group-hover:scale-105 transition-transform">
-            <Hexagon className="text-white fill-white/20" size={16} />
+            <Hexagon className="text-black fill-black/20" size={16} />
           </div>
           <div>
             <h1 className="text-base font-bold tracking-tight text-slate-900 leading-none">NEXYOVI</h1>
@@ -37,12 +37,12 @@ export default function Sidebar() {
           href="/dashboard"
           className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-200 ${
             pathname === "/dashboard"
-              ? "bg-primary text-black font-semibold"
-              : "hover:bg-slate-50 text-slate-600"
+              ? "bg-primary text-black font-bold"
+              : "hover:bg-slate-50 text-black"
           }`}
         >
-          <LayoutDashboard size={16} />
-          <span className="font-medium text-sm">Command Center</span>
+          <LayoutDashboard size={16} className="text-black" />
+          <span className="font-bold text-sm">Command Center</span>
         </Link>
 
         {/* AI Assistant */}
@@ -50,12 +50,12 @@ export default function Sidebar() {
           href="/dashboard/ai-core"
           className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-200 ${
             pathname === "/dashboard/ai-core"
-              ? "bg-primary text-black font-semibold"
-              : "hover:bg-slate-50 text-slate-600"
+              ? "bg-primary text-black font-bold"
+              : "hover:bg-slate-50 text-black"
           }`}
         >
-          <BrainCircuit size={16} />
-          <span className="font-medium text-sm">AI Assistant</span>
+          <BrainCircuit size={16} className="text-black" />
+          <span className="font-bold text-sm">AI Assistant</span>
         </Link>
 
         <div className="h-px bg-slate-100 my-2" />
@@ -76,11 +76,11 @@ export default function Sidebar() {
                 <Link
                   href={pillarHref}
                   className={`flex-1 flex items-center gap-2.5 px-3 py-2.5 ${
-                    isPillarActive ? "text-black font-semibold" : "text-slate-600"
+                    isPillarActive ? "text-black font-bold" : "text-black"
                   }`}
                 >
                   <span className="text-base leading-none">{pillar.emoji}</span>
-                  <span className="font-medium text-sm truncate">{pillar.name}</span>
+                  <span className="font-bold text-sm truncate">{pillar.name}</span>
                 </Link>
 
                 {/* Chevron → expands sub-modules */}
@@ -90,7 +90,7 @@ export default function Sidebar() {
                     isPillarActive ? "text-black/60" : "text-slate-400 hover:text-slate-700"
                   }`}
                 >
-                  <ChevronDown size={13} className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown size={13} className={`text-black transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
                 </button>
               </div>
 
@@ -112,7 +112,7 @@ export default function Sidebar() {
                             key={i}
                             href={href}
                             className={`block py-1.5 px-2 text-sm rounded-lg transition-colors ${
-                              active ? "bg-slate-100 text-slate-900 font-medium" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50 font-light"
+                              active ? "bg-slate-100 text-black font-bold" : "text-black hover:bg-slate-50 font-bold"
                             }`}
                           >
                             {mod}
@@ -135,7 +135,7 @@ export default function Sidebar() {
           <div className="flex-1 min-w-0">
             <h4 className="text-sm font-semibold text-slate-900 truncate">System Admin</h4>
           </div>
-          <Settings size={14} className="text-slate-400 shrink-0" />
+          <Settings size={14} className="text-black shrink-0" />
         </div>
       </div>
     </aside>

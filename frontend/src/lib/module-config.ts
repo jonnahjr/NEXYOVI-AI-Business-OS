@@ -3,7 +3,8 @@
 export type Column = {
   key: string;
   label: string;
-  type: "text" | "badge" | "currency" | "date" | "number" | "avatar";
+  type: "text" | "badge" | "currency" | "date" | "number" | "avatar" | "select";
+  options?: string[];
 };
 
 export type ModuleConfig = {
@@ -16,36 +17,85 @@ export type ModuleConfig = {
 const EMPLOYEES = {
   title: "Employee Management",
   columns: [
-    { key: "name",       label: "Name",         type: "avatar" as const },
-    { key: "id",         label: "Emp ID",        type: "text" as const },
-    { key: "department", label: "Department",    type: "text" as const },
-    { key: "position",   label: "Position",      type: "text" as const },
-    { key: "salary",     label: "Salary (ETB)",  type: "currency" as const },
-    { key: "status",     label: "Status",        type: "badge" as const },
-    { key: "startDate",  label: "Start Date",    type: "date" as const },
+    // ── Personal Info ───────────────────────────────────────
+    { key: "name",          label: "Name",            type: "avatar" as const },
+    { key: "id",            label: "Emp ID",           type: "text" as const },
+    { key: "gender",        label: "Gender",           type: "text" as const },
+    { key: "dateOfBirth",   label: "DOB",              type: "date" as const },
+    { key: "nationality",   label: "Nationality",      type: "text" as const },
+    { key: "maritalStatus", label: "Marital Status",   type: "text" as const },
+    { key: "nationalId",    label: "National ID",      type: "text" as const },
+    { key: "passportNumber",label: "Passport",         type: "text" as const },
+    // ── Contact ─────────────────────────────────────────────
+    { key: "personalEmail", label: "Personal Email",   type: "text" as const },
+    { key: "workEmail",     label: "Work Email",       type: "text" as const },
+    { key: "personalPhone", label: "Mobile",           type: "text" as const },
+    { key: "workPhone",     label: "Work Phone",       type: "text" as const },
+    { key: "address",       label: "Address",          type: "text" as const },
+    { key: "city",          label: "City",             type: "text" as const },
+    { key: "region",        label: "Region",           type: "text" as const },
+    { key: "country",       label: "Country",          type: "text" as const },
+    { key: "postalCode",    label: "Postal Code",       type: "text" as const },
+    { key: "emergencyName", label: "Emergency Contact",type: "text" as const },
+    { key: "emergencyPhone",label: "Emergency Phone",  type: "text" as const },
+    { key: "emergencyRelation",label: "Emergency Rel", type: "text" as const },
+    // ── Employment ──────────────────────────────────────────
+    { key: "department",    label: "Department",       type: "text" as const },
+    { key: "position",      label: "Position",         type: "text" as const },
+    { key: "employmentType",label: "Employ Type",      type: "text" as const },
+    { key: "status",        label: "Status",           type: "badge" as const },
+    { key: "startDate",     label: "Hire Date",        type: "date" as const },
+    { key: "branchOffice",  label: "Branch",           type: "text" as const },
+    { key: "workLocation",  label: "Work Location",    type: "text" as const },
+    { key: "workShift",     label: "Shift",            type: "text" as const },
+    { key: "gradeLevel",    label: "Grade",            type: "text" as const },
+    { key: "costCenter",    label: "Cost Center",      type: "text" as const },
+    // ── Payroll ─────────────────────────────────────────────
+    { key: "salary",        label: "Salary (ETB)",     type: "currency" as const },
+    { key: "salaryType",    label: "Salary Type",      type: "text" as const },
+    { key: "currency",      label: "Currency",         type: "text" as const },
+    { key: "allowances",    label: "Allowances",       type: "currency" as const },
+    { key: "bonuses",       label: "Bonuses",          type: "currency" as const },
+    { key: "paymentMethod", label: "Payment Method",   type: "text" as const },
+    { key: "bankName",      label: "Bank",             type: "text" as const },
+    { key: "bankAccount",   label: "Bank Account",     type: "text" as const },
+    { key: "taxId",         label: "TIN",              type: "text" as const },
+    { key: "pensionId",     label: "Pension ID",       type: "text" as const },
+    // ── Leave ───────────────────────────────────────────────
+    { key: "annualLeaveBalance",   label: "Annual Leave", type: "number" as const },
+    { key: "sickLeaveBalance",     label: "Sick Leave",   type: "number" as const },
+    { key: "maternityLeave",       label: "Maternity",    type: "number" as const },
+    { key: "paternityLeave",       label: "Paternity",    type: "number" as const },
+    { key: "otherLeaveTypes",       label: "Other Leave",   type: "text" as const },
   ],
   rows: [
-    { name: "Abebe Girma",    id: "EMP-001", department: "Finance",     position: "Senior Accountant",     salary: 35000, status: "Active",    startDate: "2021-03-15" },
-    { name: "Tigist Haile",   id: "EMP-002", department: "HR",          position: "HR Manager",            salary: 42000, status: "Active",    startDate: "2020-08-01" },
-    { name: "Dawit Bekele",   id: "EMP-003", department: "IT",          position: "Software Engineer",     salary: 48000, status: "Active",    startDate: "2022-01-10" },
-    { name: "Sara Tadesse",   id: "EMP-004", department: "Sales",       position: "Sales Executive",       salary: 28000, status: "Active",    startDate: "2022-06-20" },
-    { name: "Yonas Alemu",    id: "EMP-005", department: "Operations",  position: "Operations Manager",    salary: 52000, status: "On Leave",  startDate: "2019-11-05" },
-    { name: "Mekdes Worku",   id: "EMP-006", department: "Marketing",   position: "Marketing Specialist",  salary: 32000, status: "Active",    startDate: "2023-02-14" },
-    { name: "Biniam Tesfaye", id: "EMP-007", department: "Procurement", position: "Procurement Officer",   salary: 30000, status: "Active",    startDate: "2021-09-30" },
-    { name: "Hana Bekele",    id: "EMP-008", department: "Finance",     position: "Financial Analyst",     salary: 38000, status: "Inactive",  startDate: "2020-04-22" },
+    { name: "Abebe Girma",    id: "EMP-001", gender: "Male", dateOfBirth: "1990-05-12", nationality: "Ethiopian", maritalStatus: "Married", nationalId: "ID-001", passportNumber: "EP123456", personalEmail: "abebe@example.com", workEmail: "abebe@nexyovi.com", personalPhone: "+251-911-000001", workPhone: "+251-911-000101", address: "Bole, Woreda 03", city: "Addis Ababa", region: "Addis Ababa", country: "Ethiopia", postalCode: "1000", emergencyName: "Sara A.", emergencyPhone: "+251-922-000001", emergencyRelation: "Spouse", department: "Finance", position: "Senior Accountant", employmentType: "Full Time", status: "Active", startDate: "2021-03-15", branchOffice: "Head Office (HQ)", workLocation: "Addis Ababa (HQ)", workShift: "9-11 Full Time", gradeLevel: "L4 - Senior", costCenter: "CC-FIN-1001", salary: 35000, salaryType: "Monthly", currency: "ETB", allowances: 4200, bonuses: 5000, paymentMethod: "Bank Transfer", bankName: "CBE", bankAccount: "1000123456789", taxId: "TIN-001", pensionId: "PEN-001", annualLeaveBalance: 21, sickLeaveBalance: 14, maternityLeave: 0, paternityLeave: 0, otherLeaveTypes: "" },
+    { name: "Tigist Haile",   id: "EMP-002", gender: "Female", dateOfBirth: "1988-11-25", nationality: "Ethiopian", maritalStatus: "Married", nationalId: "ID-002", passportNumber: "EP789012", personalEmail: "tigist@example.com", workEmail: "tigist@nexyovi.com", personalPhone: "+251-911-000002", workPhone: "+251-911-000102", address: "CMC", city: "Addis Ababa", region: "Addis Ababa", country: "Ethiopia", postalCode: "1000", emergencyName: "Dawit H.", emergencyPhone: "+251-922-000002", emergencyRelation: "Spouse", department: "HR", position: "HR Manager", employmentType: "Full Time", status: "Active", startDate: "2020-08-01", branchOffice: "Head Office (HQ)", workLocation: "Addis Ababa (HQ)", workShift: "9-11 Full Time", gradeLevel: "L5 - Lead", costCenter: "CC-HR-1001", salary: 42000, salaryType: "Monthly", currency: "ETB", allowances: 5040, bonuses: 6000, paymentMethod: "Bank Transfer", bankName: "Awash Bank", bankAccount: "1000234567890", taxId: "TIN-002", pensionId: "PEN-002", annualLeaveBalance: 21, sickLeaveBalance: 14, maternityLeave: 0, paternityLeave: 0, otherLeaveTypes: "" },
+    { name: "Dawit Bekele",   id: "EMP-003", gender: "Male", dateOfBirth: "1995-02-18", nationality: "Ethiopian", maritalStatus: "Single", nationalId: "ID-003", passportNumber: "", personalEmail: "dawit@example.com", workEmail: "dawit@nexyovi.com", personalPhone: "+251-911-000003", workPhone: "+251-911-000103", address: "22 Kebele", city: "Addis Ababa", region: "Addis Ababa", country: "Ethiopia", postalCode: "1000", emergencyName: "Bekele D.", emergencyPhone: "+251-922-000003", emergencyRelation: "Parent", department: "IT", position: "Software Engineer", employmentType: "Full Time", status: "Active", startDate: "2022-01-10", branchOffice: "Head Office (HQ)", workLocation: "Remote", workShift: "Flexible / On-Demand", gradeLevel: "L3 - Mid-Level", costCenter: "CC-IT-1001", salary: 48000, salaryType: "Monthly", currency: "ETB", allowances: 5760, bonuses: 8000, paymentMethod: "Bank Transfer", bankName: "Dashen Bank", bankAccount: "1000345678901", taxId: "TIN-003", pensionId: "PEN-003", annualLeaveBalance: 18, sickLeaveBalance: 14, maternityLeave: 0, paternityLeave: 0, otherLeaveTypes: "" },
+    { name: "Sara Tadesse",   id: "EMP-004", gender: "Female", dateOfBirth: "1997-07-30", nationality: "Ethiopian", maritalStatus: "Single", nationalId: "ID-004", passportNumber: "", personalEmail: "sara@example.com", workEmail: "sara@nexyovi.com", personalPhone: "+251-911-000004", workPhone: "+251-911-000104", address: "Mexico Square", city: "Addis Ababa", region: "Addis Ababa", country: "Ethiopia", postalCode: "1000", emergencyName: "Tadesse S.", emergencyPhone: "+251-922-000004", emergencyRelation: "Parent", department: "Sales", position: "Sales Executive", employmentType: "Full Time", status: "Active", startDate: "2022-06-20", branchOffice: "Head Office (HQ)", workLocation: "On-site", workShift: "Morning Shift", gradeLevel: "L3 - Mid-Level", costCenter: "CC-SAL-1001", salary: 28000, salaryType: "Monthly", currency: "ETB", allowances: 3360, bonuses: 4000, paymentMethod: "Bank Transfer", bankName: "CBE", bankAccount: "1000456789012", taxId: "TIN-004", pensionId: "PEN-004", annualLeaveBalance: 21, sickLeaveBalance: 14, maternityLeave: 90, paternityLeave: 0, otherLeaveTypes: "" },
+    { name: "Yonas Alemu",    id: "EMP-005", gender: "Male", dateOfBirth: "1985-09-14", nationality: "Ethiopian", maritalStatus: "Married", nationalId: "ID-005", passportNumber: "EP345678", personalEmail: "yonas@example.com", workEmail: "yonas@nexyovi.com", personalPhone: "+251-911-000005", workPhone: "+251-911-000105", address: "Piassa", city: "Addis Ababa", region: "Addis Ababa", country: "Ethiopia", postalCode: "1000", emergencyName: "Alemu Y.", emergencyPhone: "+251-922-000005", emergencyRelation: "Spouse", department: "Operations", position: "Operations Manager", employmentType: "Full Time", status: "On Leave", startDate: "2019-11-05", branchOffice: "Head Office (HQ)", workLocation: "On-site", workShift: "Day Shift", gradeLevel: "L5 - Lead", costCenter: "CC-OPS-1001", salary: 52000, salaryType: "Monthly", currency: "ETB", allowances: 6240, bonuses: 10000, paymentMethod: "Bank Transfer", bankName: "CBE", bankAccount: "1000567890123", taxId: "TIN-005", pensionId: "PEN-005", annualLeaveBalance: 25, sickLeaveBalance: 14, maternityLeave: 0, paternityLeave: 14, otherLeaveTypes: "" },
+    { name: "Mekdes Worku",   id: "EMP-006", gender: "Female", dateOfBirth: "1993-04-22", nationality: "Ethiopian", maritalStatus: "Married", nationalId: "ID-006", passportNumber: "", personalEmail: "mekdes@example.com", workEmail: "mekdes@nexyovi.com", personalPhone: "+251-911-000006", workPhone: "+251-911-000106", address: "Bole", city: "Addis Ababa", region: "Addis Ababa", country: "Ethiopia", postalCode: "1000", emergencyName: "Worku M.", emergencyPhone: "+251-922-000006", emergencyRelation: "Spouse", department: "Marketing", position: "Marketing Specialist", employmentType: "Contract", status: "Active", startDate: "2023-02-14", branchOffice: "Head Office (HQ)", workLocation: "Hybrid", workShift: "Flexible / On-Demand", gradeLevel: "L3 - Mid-Level", costCenter: "CC-MKT-1001", salary: 32000, salaryType: "Monthly", currency: "ETB", allowances: 3840, bonuses: 3000, paymentMethod: "Bank Transfer", bankName: "Bank of Abyssinia", bankAccount: "1000678901234", taxId: "TIN-006", pensionId: "PEN-006", annualLeaveBalance: 21, sickLeaveBalance: 14, maternityLeave: 90, paternityLeave: 0, otherLeaveTypes: "" },
+    { name: "Biniam Tesfaye", id: "EMP-007", gender: "Male", dateOfBirth: "1991-12-05", nationality: "Ethiopian", maritalStatus: "Single", nationalId: "ID-007", passportNumber: "", personalEmail: "biniam@example.com", workEmail: "biniam@nexyovi.com", personalPhone: "+251-911-000007", workPhone: "+251-911-000107", address: "Kera", city: "Addis Ababa", region: "Addis Ababa", country: "Ethiopia", postalCode: "1000", emergencyName: "Tesfaye B.", emergencyPhone: "+251-922-000007", emergencyRelation: "Parent", department: "Procurement", position: "Procurement Officer", employmentType: "Full Time", status: "Active", startDate: "2021-09-30", branchOffice: "Head Office (HQ)", workLocation: "On-site", workShift: "Morning Shift", gradeLevel: "L3 - Mid-Level", costCenter: "CC-PRO-1001", salary: 30000, salaryType: "Monthly", currency: "ETB", allowances: 3600, bonuses: 3500, paymentMethod: "Bank Transfer", bankName: "CBE", bankAccount: "1000789012345", taxId: "TIN-007", pensionId: "PEN-007", annualLeaveBalance: 21, sickLeaveBalance: 14, maternityLeave: 0, paternityLeave: 0, otherLeaveTypes: "" },
+    { name: "Hana Bekele",    id: "EMP-008", gender: "Female", dateOfBirth: "1989-08-19", nationality: "Ethiopian", maritalStatus: "Divorced", nationalId: "ID-008", passportNumber: "EP901234", personalEmail: "hana@example.com", workEmail: "hana@nexyovi.com", personalPhone: "+251-911-000008", workPhone: "+251-911-000108", address: "Kazanchis", city: "Addis Ababa", region: "Addis Ababa", country: "Ethiopia", postalCode: "1000", emergencyName: "Bekele H.", emergencyPhone: "+251-922-000008", emergencyRelation: "Sibling", department: "Finance", position: "Financial Analyst", employmentType: "Part Time", status: "Inactive", startDate: "2020-04-22", branchOffice: "Head Office (HQ)", workLocation: "Remote", workShift: "Evening Shift", gradeLevel: "L4 - Senior", costCenter: "CC-FIN-1002", salary: 38000, salaryType: "Monthly", currency: "ETB", allowances: 4560, bonuses: 4500, paymentMethod: "Bank Transfer", bankName: "Zemen Bank", bankAccount: "1000890123456", taxId: "TIN-008", pensionId: "PEN-008", annualLeaveBalance: 21, sickLeaveBalance: 14, maternityLeave: 0, paternityLeave: 0, otherLeaveTypes: "" },
   ],
 };
 
 const PAYROLL = {
   title: "Payroll",
   columns: [
-    { key: "employee",  label: "Employee",      type: "avatar" as const },
-    { key: "period",    label: "Period",        type: "text" as const },
-    { key: "basic",     label: "Basic (ETB)",   type: "currency" as const },
-    { key: "allowance", label: "Allowance",     type: "currency" as const },
-    { key: "deduction", label: "Deduction",     type: "currency" as const },
-    { key: "net",       label: "Net Pay (ETB)", type: "currency" as const },
-    { key: "status",    label: "Status",        type: "badge" as const },
+    { key: "employee",      label: "Employee",      type: "avatar" as const },
+    { key: "employeeCode",  label: "Emp ID",        type: "text" as const },
+    { key: "department",    label: "Department",    type: "text" as const },
+    { key: "position",      label: "Position",      type: "text" as const },
+    { key: "employmentType",label: "Type",          type: "text" as const },
+    { key: "empStatus",     label: "Emp Status",    type: "badge" as const },
+    { key: "period",        label: "Period",        type: "text" as const },
+    { key: "basic",         label: "Basic (ETB)",   type: "currency" as const },
+    { key: "allowance",     label: "Allowance",     type: "currency" as const },
+    { key: "deduction",     label: "Deduction",     type: "currency" as const },
+    { key: "tax",           label: "Tax",           type: "currency" as const },
+    { key: "net",           label: "Net Pay (ETB)", type: "currency" as const },
+    { key: "status",        label: "Status",        type: "badge" as const },
   ],
   rows: [
     { employee: "Abebe Girma",    period: "June 2025", basic: 35000, allowance: 4200, deduction: 3850, net: 35350, status: "Paid" },
@@ -62,12 +112,12 @@ const LEAVE_MANAGEMENT = {
   title: "Leave Management",
   columns: [
     { key: "employee",   label: "Employee",      type: "avatar" as const },
-    { key: "type",       label: "Leave Type",    type: "text" as const },
+    { key: "type",       label: "Leave Type",    type: "select" as const, options: ["Annual", "Sick", "Maternity", "Paternity", "Emergency", "Unpaid", "Study", "Compassionate", "Other"] },
     { key: "startDate",  label: "From",          type: "date" as const },
     { key: "endDate",    label: "To",            type: "date" as const },
     { key: "days",       label: "Days",          type: "number" as const },
-    { key: "reason",     label: "Reason",        type: "text" as const },
-    { key: "status",     label: "Status",        type: "badge" as const },
+    { key: "reason",     label: "Reason",        type: "select" as const, options: ["Medical Appointment", "Family Emergency", "Personal Vacation", "Bereavement", "Study Leave", "Travel", "Sick Leave", "Religious Holiday", "Wedding", "Maternity/Paternity", "Appointment", "Work from Home"] },
+    { key: "status",     label: "Status",        type: "select" as const, options: ["Pending", "Approved", "Rejected", "Cancelled"] },
   ],
   rows: [
     { employee: "Yonas Alemu",  type: "Annual",    startDate: "2025-07-01", endDate: "2025-07-10", days: 10, reason: "Family vacation",     status: "Approved" },
@@ -513,9 +563,12 @@ const RECRUITMENT_ATS = {
   title: 'Recruitment (ATS)',
   columns: [
     { key: 'name', label: 'Candidate', type: 'avatar' as const },
+    { key: 'email', label: 'Email', type: 'text' as const },
+    { key: 'phone', label: 'Phone', type: 'text' as const },
     { key: 'position', label: 'Position', type: 'text' as const },
     { key: 'stage', label: 'Stage', type: 'badge' as const },
     { key: 'rating', label: 'Rating', type: 'number' as const },
+    { key: 'notes', label: 'Notes', type: 'text' as const },
     { key: 'createdAt', label: 'Applied On', type: 'date' as const }
   ],
   rows: []

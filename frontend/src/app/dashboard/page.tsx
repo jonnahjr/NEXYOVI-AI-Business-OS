@@ -20,18 +20,18 @@ const AI_SUGGESTIONS = [
 ];
 
 const KPI_CARDS = [
-  { label: "Revenue (MTD)",    value: "ETB 4.2M",  change: "+17%",  positive: true,  icon: DollarSign,    color: "bg-slate-100 text-slate-900" },
-  { label: "Expenses (MTD)",   value: "ETB 1.8M",  change: "+3%",   positive: false, icon: TrendingUp,    color: "bg-slate-100 text-slate-900" },
-  { label: "Active Employees", value: "247",        change: "+5",    positive: true,  icon: Users,         color: "bg-slate-100 text-slate-900" },
-  { label: "Open Tasks",       value: "38",         change: "12 due",positive: false, icon: ClipboardList, color: "bg-slate-100 text-slate-900" },
+  { label: "Revenue (MTD)",    value: "ETB 4.2M",  change: "+17%",  positive: true,  icon: DollarSign,    color: "bg-slate-100 text-black" },
+  { label: "Expenses (MTD)",   value: "ETB 1.8M",  change: "+3%",   positive: false, icon: TrendingUp,    color: "bg-slate-100 text-black" },
+  { label: "Active Employees", value: "247",        change: "+5",    positive: true,  icon: Users,         color: "bg-slate-100 text-black" },
+  { label: "Open Tasks",       value: "38",         change: "12 due",positive: false, icon: ClipboardList, color: "bg-slate-100 text-black" },
 ];
 
 const NOTIFICATIONS = [
-  { icon: DollarSign,  color: "text-slate-900 bg-slate-100",   title: "Payroll due tomorrow",      time: "2h ago",    priority: "high" },
-  { icon: Package,     color: "text-slate-900 bg-slate-100",   title: "Inventory low — Warehouse A", time: "3h ago",  priority: "high" },
-  { icon: Activity,    color: "text-slate-900 bg-slate-100",   title: "Sales up 17% this week",    time: "5h ago",   priority: "info" },
-  { icon: Bell,        color: "text-slate-900 bg-slate-100",   title: "3 invoices overdue",        time: "1d ago",    priority: "medium" },
-  { icon: ShieldCheck, color: "text-slate-900 bg-slate-100",   title: "Security audit scheduled",  time: "2d ago",    priority: "info" },
+  { icon: DollarSign,  color: "text-black bg-slate-100",   title: "Payroll due tomorrow",      time: "2h ago",    priority: "high" },
+  { icon: Package,     color: "text-black bg-slate-100",   title: "Inventory low — Warehouse A", time: "3h ago",  priority: "high" },
+  { icon: Activity,    color: "text-black bg-slate-100",   title: "Sales up 17% this week",    time: "5h ago",   priority: "info" },
+  { icon: Bell,        color: "text-black bg-slate-100",   title: "3 invoices overdue",        time: "1d ago",    priority: "medium" },
+  { icon: ShieldCheck, color: "text-black bg-slate-100",   title: "Security audit scheduled",  time: "2d ago",    priority: "info" },
 ];
 
 const QUICK_ACTIONS = [
@@ -75,7 +75,7 @@ export default function DashboardPage() {
       >
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-            <BrainCircuit size={22} className="text-primary" />
+            <BrainCircuit size={22} className="text-black" />
           </div>
           <div>
             <h2 className="text-white font-bold text-lg leading-none">SASA AI Business Brain</h2>
@@ -144,7 +144,7 @@ export default function DashboardPage() {
       {/* ── TODAY'S BUSINESS KPIs ────────────────────────── */}
       <div>
         <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <BarChart2 size={18} className="text-slate-400" /> Today's Business
+          <BarChart2 size={18} className="text-black" /> Today's Business
         </h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {KPI_CARDS.map((k, i) => (
@@ -176,7 +176,7 @@ export default function DashboardPage() {
         {/* Quick Actions */}
         <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
           <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <Zap size={16} className="text-primary" /> Quick Actions
+            <Zap size={16} className="text-black" /> Quick Actions
           </h3>
           <div className="grid grid-cols-2 gap-3">
             {QUICK_ACTIONS.map((a, i) => (
@@ -186,7 +186,7 @@ export default function DashboardPage() {
                 className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:border-primary/30 hover:bg-primary/5 transition-all group"
               >
                 <div className="w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-primary/10 flex items-center justify-center transition-colors shrink-0">
-                  <a.icon size={15} className="text-slate-600 group-hover:text-primary transition-colors" />
+                  <a.icon size={15} className="text-black" />
                 </div>
                 <span className="text-xs font-semibold text-slate-700 group-hover:text-slate-900 leading-tight">{a.label}</span>
               </a>
@@ -197,7 +197,7 @@ export default function DashboardPage() {
         {/* AI Notifications */}
         <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
           <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <Bell size={16} className="text-primary" /> AI Notifications
+            <Bell size={16} className="text-black" /> AI Notifications
             <span className="ml-auto text-xs font-medium text-slate-400">Prioritized by AI</span>
           </h3>
           <div className="space-y-3">
@@ -212,7 +212,7 @@ export default function DashboardPage() {
                     <Clock size={10} /> {n.time}
                   </p>
                 </div>
-                <ArrowUpRight size={14} className="text-slate-300 group-hover:text-slate-600 transition-colors shrink-0 mt-0.5" />
+                <ArrowUpRight size={14} className="text-black group-hover:text-black transition-colors shrink-0 mt-0.5" />
               </div>
             ))}
           </div>
