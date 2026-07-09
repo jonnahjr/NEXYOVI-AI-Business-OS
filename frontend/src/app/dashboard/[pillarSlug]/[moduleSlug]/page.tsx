@@ -7,23 +7,36 @@ import {
   BrainCircuit, Send, Plus, Search, Filter, Download,
   MoreHorizontal, ChevronLeft, Pencil, Trash2, Eye, X,
   Calculator, RefreshCw, DollarSign, CheckCircle, Clock, Settings,
-  Check, XCircle, CreditCard
+  Check, XCircle, CreditCard, Play, Pause, RotateCcw, FileText
 } from "lucide-react";
 import Link from "next/link";
 import { NEXYOVI_PILLARS, toSlug } from "@/lib/pillars";
+import { getPillarLogo } from "@/components/pillar-logos";
 import { getModuleConfig, Column } from "@/lib/module-config";
 import { getPillarConfig } from "@/lib/pillar-config";
 import UltimateEmployeeManager from "@/components/hr/UltimateEmployeeManager";
+import UltimateLeadManager from "@/components/crm/UltimateLeadManager";
+import UltimateCustomerManager from "@/components/crm/UltimateCustomerManager";
+import UltimateDealManager from "@/components/crm/UltimateDealManager";
+import UltimateInvoiceManager from "@/components/crm/UltimateInvoiceManager";
 import ATSKanban from "@/components/hr/ATSKanban";
 import UltimateAttendanceDashboard from "@/components/hr/UltimateAttendanceDashboard";
 import HRAnalyticsDashboard from "@/components/hr/HRAnalyticsDashboard";
 import EmployeeSelfService from "@/components/hr/EmployeeSelfService";
 import OrganizationalChart from "@/components/hr/OrganizationalChart";
+import BarcodeQRPage from "@/components/inventory/BarcodeQRPage";
+import FinancePage from "@/components/finance/FinancePage";
 import EmployeeAutocomplete from "@/components/ui/EmployeeAutocomplete";
+import SearchableSelect from "@/components/ui/SearchableSelect";
+import ProductAutocomplete from "@/components/ui/ProductAutocomplete";
+import WarehouseAutocomplete from "@/components/ui/WarehouseAutocomplete";
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer
+} from "recharts";
 
 const STATUS_COLORS: Record<string, string> = {
   "Active":           "bg-slate-100 text-slate-900",
@@ -41,7 +54,6 @@ const STATUS_COLORS: Record<string, string> = {
   "Final":            "bg-slate-100 text-slate-900",
   "Signed":           "bg-slate-100 text-slate-900",
   "Pending Signature":"bg-slate-100 text-slate-900",
-  "Qualified":        "bg-slate-100 text-slate-900",
   "Proposal":         "bg-slate-100 text-slate-900",
   "Negotiation":      "bg-slate-100 text-slate-900",
   "New":              "bg-slate-100 text-slate-900",
@@ -70,6 +82,11 @@ const STATUS_COLORS: Record<string, string> = {
   "Referral":         "bg-slate-100 text-slate-900",
   "LinkedIn":         "bg-slate-100 text-slate-900",
   "Cold Call":        "bg-slate-100 text-slate-900",
+  "Contacted":        "bg-sky-50 text-sky-700",
+  "Qualified":        "bg-indigo-50 text-indigo-700",
+  "Closed Lost":      "bg-red-50 text-red-700",
+  "Delivered":        "bg-emerald-50 text-emerald-700",
+  "Shipped":          "bg-blue-50 text-blue-700",
   "Event":            "bg-slate-100 text-slate-900",
   "Food":             "bg-slate-100 text-slate-900",
   "Electronics":      "bg-slate-100 text-slate-900",
@@ -77,6 +94,74 @@ const STATUS_COLORS: Record<string, string> = {
   "Furniture":        "bg-slate-100 text-slate-900",
   "Export":           "bg-slate-100 text-slate-900",
 };
+
+// ── STATUS ACTION TRANSITIONS ──────────────────────────────────
+// Maps a current status to available transition buttons
+type StatusAction = {
+  nextStatus: string;
+  label: string;
+  icon: React.ReactNode;
+  color: string;
+};
+
+const STATUS_ACTIONS: Record<string, StatusAction[]> = {
+  "Pending": [
+    { nextStatus: "Approved", label: "Approve", icon: <Check size={13} />, color: "hover:bg-emerald-50 hover:text-emerald-600" },
+    { nextStatus: "Rejected", label: "Reject", icon: <XCircle size={13} />, color: "hover:bg-red-50 hover:text-red-600" },
+  ],
+  "Draft": [
+    { nextStatus: "Sent", label: "Send", icon: <Send size={13} />, color: "hover:bg-blue-50 hover:text-blue-600" },
+    { nextStatus: "Final", label: "Finalize", icon: <Check size={13} />, color: "hover:bg-emerald-50 hover:text-emerald-600" },
+  ],
+  "Open": [
+    { nextStatus: "In Progress", label: "Start", icon: <Play size={13} />, color: "hover:bg-blue-50 hover:text-blue-600" },
+  ],
+  "In Progress": [
+    { nextStatus: "Resolved", label: "Resolve", icon: <Check size={13} />, color: "hover:bg-emerald-50 hover:text-emerald-600" },
+    { nextStatus: "Completed", label: "Complete", icon: <CheckCircle size={13} />, color: "hover:bg-green-50 hover:text-green-600" },
+  ],
+  "New": [
+    { nextStatus: "Contacted", label: "Contact", icon: <Send size={13} />, color: "hover:bg-blue-50 hover:text-blue-600" },
+    { nextStatus: "Closed Lost", label: "Close Lost", icon: <XCircle size={13} />, color: "hover:bg-red-50 hover:text-red-600" },
+  ],
+  "Contacted": [
+    { nextStatus: "Qualified", label: "Qualify", icon: <Check size={13} />, color: "hover:bg-emerald-50 hover:text-emerald-600" },
+    { nextStatus: "Closed Lost", label: "Close Lost", icon: <XCircle size={13} />, color: "hover:bg-red-50 hover:text-red-600" },
+  ],
+  "Sent": [
+    { nextStatus: "Paid", label: "Mark Paid", icon: <CreditCard size={13} />, color: "hover:bg-green-50 hover:text-green-600" },
+    { nextStatus: "Overdue", label: "Mark Overdue", icon: <Clock size={13} />, color: "hover:bg-amber-50 hover:text-amber-600" },
+  ],
+  "Approved": [
+    { nextStatus: "Paid", label: "Pay", icon: <CreditCard size={13} />, color: "hover:bg-green-50 hover:text-green-600" },
+  ],
+  "Active": [
+    { nextStatus: "Inactive", label: "Deactivate", icon: <Pause size={13} />, color: "hover:bg-amber-50 hover:text-amber-600" },
+  ],
+  "Inactive": [
+    { nextStatus: "Active", label: "Activate", icon: <Play size={13} />, color: "hover:bg-emerald-50 hover:text-emerald-600" },
+  ],
+  "Rejected": [
+    { nextStatus: "Open", label: "Reopen", icon: <RotateCcw size={13} />, color: "hover:bg-blue-50 hover:text-blue-600" },
+  ],
+  "Cancelled": [
+    { nextStatus: "Open", label: "Reopen", icon: <RotateCcw size={13} />, color: "hover:bg-blue-50 hover:text-blue-600" },
+  ],
+  "Resolved": [
+    { nextStatus: "Open", label: "Reopen", icon: <RotateCcw size={13} />, color: "hover:bg-blue-50 hover:text-blue-600" },
+  ],
+  "Shipped": [
+    { nextStatus: "Delivered", label: "Deliver", icon: <Check size={13} />, color: "hover:bg-emerald-50 hover:text-emerald-600" },
+  ],
+  "Processing": [
+    { nextStatus: "Shipped", label: "Ship", icon: <Send size={13} />, color: "hover:bg-blue-50 hover:text-blue-600" },
+  ],
+};
+
+// Statuses that allow a generic "Cancel" action
+const CANCELABLE_STATUSES = new Set([
+  "Pending", "Draft", "Open", "New", "Sent", "Approved", "Active", "Processing", "Scheduled"
+]);
 
 function Badge({ value }: { value: string }) {
   const cls = STATUS_COLORS[value] ?? "bg-slate-100 text-slate-900";
@@ -166,9 +251,32 @@ export default function ModulePage({
   
   // Ultimate HR state
   const [ultimateHR, setUltimateHR] = useState<{ mode: 'create' | 'edit' | 'view'; data?: any; id?: string } | null>(null);
+  // Ultimate Lead Manager state
+  const [ultimateLead, setUltimateLead] = useState<{ mode: 'create' | 'edit' | 'view'; data?: any; id?: string } | null>(null);
+  // Ultimate CRM Managers state
+  const [ultimateCustomer, setUltimateCustomer] = useState<{ mode: 'create' | 'edit' | 'view'; data?: any; id?: string } | null>(null);
+  const [ultimateDeal, setUltimateDeal] = useState<{ mode: 'create' | 'edit' | 'view'; data?: any; id?: string } | null>(null);
+  const [ultimateInvoice, setUltimateInvoice] = useState<{ mode: 'create' | 'edit' | 'view'; data?: any; id?: string } | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+
+  // Invoice stats state
+  const [invoiceStats, setInvoiceStats] = useState<{
+    totalOutstanding: number;
+    totalOverdue: number;
+    totalPaid: number;
+    monthlyRevenue: number;
+    overdueCount: number;
+    paidCount: number;
+    outstandingCount: number;
+    sentCount: number;
+    draftCount: number;
+    totalInvoices: number;
+    monthlyRevenueData: { month: number; year: number; revenue: number; count: number }[];
+  } | null>(null);
+  const [isLoadingInvoiceStats, setIsLoadingInvoiceStats] = useState(false);
+  const [invoiceStatsRefreshKey, setInvoiceStatsRefreshKey] = useState(0);
 
   // Payroll-specific state
   const [isGeneratingPayroll, setIsGeneratingPayroll] = useState(false);
@@ -484,6 +592,26 @@ export default function ModulePage({
     }
   };
 
+  // Fetch invoice stats when on invoicing module
+  useEffect(() => {
+    if (moduleSlug !== "invoicing") return;
+    setIsLoadingInvoiceStats(true);
+    (async () => {
+      try {
+        const token = localStorage.getItem("token") || "";
+        const res = await fetch(
+          `http://localhost:3002/api/v1/modules/${pillarSlug}/invoicing/stats`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const json = await res.json();
+        if (json?.success && json?.data) {
+          setInvoiceStats(json.data);
+        }
+      } catch {}
+      setIsLoadingInvoiceStats(false);
+    })();
+  }, [pillarSlug, moduleSlug, invoiceStatsRefreshKey]);
+
   useEffect(() => {
     loadData();
   }, [pillarSlug, moduleSlug]);
@@ -568,6 +696,46 @@ export default function ModulePage({
       return;
     }
 
+    // Specialized route for Ultimate Lead Manager
+    if (pillarSlug === "crm-sales" && moduleSlug === "lead-management") {
+      setUltimateLead({
+        mode,
+        data: row || undefined,
+        id: row?.id || undefined,
+      });
+      return;
+    }
+
+    // Specialized route for Ultimate Customer Manager
+    if (pillarSlug === "crm-sales" && moduleSlug === "customer-management") {
+      setUltimateCustomer({
+        mode,
+        data: row || undefined,
+        id: row?.id || undefined,
+      });
+      return;
+    }
+
+    // Specialized route for Ultimate Deal Manager
+    if (pillarSlug === "crm-sales" && moduleSlug === "opportunity-pipeline") {
+      setUltimateDeal({
+        mode,
+        data: row || undefined,
+        id: row?.id || undefined,
+      });
+      return;
+    }
+
+    // Specialized route for Ultimate Invoice Manager
+    if (pillarSlug === "crm-sales" && moduleSlug === "invoicing") {
+      setUltimateInvoice({
+        mode,
+        data: row || undefined,
+        id: row?.id || undefined,
+      });
+      return;
+    }
+
     setModalMode(mode);
     setActiveRow(row);
     
@@ -625,7 +793,15 @@ export default function ModulePage({
       const method = modalMode === "edit" ? "PUT" : "POST";
 
       // Strip auto-generated & display-only fields that Prisma wouldn't understand
-      const { createdAt, updatedAt, id, prismaId, remainingDays, leaveBalances, employee, name, ...cleanData } = formData;
+      const { createdAt, updatedAt, id, prismaId, remainingDays, leaveBalances, employee, ...cleanData } = formData;
+      
+      // Only remove 'name' if this module doesn't have a name column in its config
+      // (e.g. employee-management computes name from firstName+lastName.
+      // For products/customers/contracts etc., name is a real DB field that must be saved.)
+      const hasNameColumn = moduleConfig.columns.some(col => col.key === "name");
+      if (!hasNameColumn && "name" in cleanData) {
+        delete (cleanData as any).name;
+      }
       
       const res = await fetch(url, {
         method,
@@ -648,6 +824,33 @@ export default function ModulePage({
       toast("Error saving record. Please try again.", "error");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // ── Generic status update for any module ──────────────────────
+  const handleStatusUpdate = async (recordId: string, newStatus: string) => {
+    setIsUpdatingStatus(recordId);
+    try {
+      const token = localStorage.getItem("token") || "";
+      const res = await fetch(`${getApiUrl()}/${recordId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        toast(`Status changed to ${newStatus}`, "success");
+        loadData();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast(err?.message || "Failed to update status", "error");
+      }
+    } catch {
+      toast("Error updating status", "error");
+    } finally {
+      setIsUpdatingStatus(null);
     }
   };
 
@@ -750,6 +953,33 @@ export default function ModulePage({
     }
   };
 
+  // Specialized route for Finance & Accounting (all 13 modules)
+  if (pillarSlug === "finance-accounting") {
+    return (
+      <div className="max-w-7xl mx-auto pb-20">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
+          <Link href="/dashboard" className="hover:text-slate-800 transition-colors">Dashboard</Link>
+          <span>/</span>
+          <Link href={`/dashboard/${pillarSlug}`} className="hover:text-slate-800 transition-colors flex items-center gap-1">
+            {(() => {
+              const Logo = getPillarLogo(pillarSlug);
+              return Logo ? <Logo size={16} className="text-slate-500 inline" /> : <span>{pillar.emoji}</span>;
+            })()} {pillar.name}
+          </Link>
+          <span>/</span>
+          <span className="text-slate-900 font-semibold">{moduleConfig.title}</span>
+        </div>
+        <FinancePage pillarSlug={pillarSlug} moduleSlug={moduleSlug} />
+      </div>
+    );
+  }
+
+  // Specialized route for Barcode / QR management
+  if (pillarSlug === "inventory-warehouse" && moduleSlug === "barcode-qr") {
+    return <BarcodeQRPage />;
+  }
+
   // Specialized route for ATS Kanban board
   if (pillarSlug === "human-resources" && moduleSlug === "recruitment-ats") {
     return <ATSKanban />;
@@ -769,7 +999,10 @@ export default function ModulePage({
           <Link href="/dashboard" className="hover:text-slate-800 transition-colors">Dashboard</Link>
           <span>/</span>
           <Link href={`/dashboard/${pillarSlug}`} className="hover:text-slate-800 transition-colors flex items-center gap-1">
-            <span>{pillar.emoji}</span> {pillar.name}
+            {(() => {
+            const Logo = getPillarLogo(pillarSlug);
+            return Logo ? <Logo size={16} className="text-slate-500 inline" /> : <span>{pillar.emoji}</span>;
+          })()} {pillar.name}
           </Link>
           <span>/</span>
           <span className="text-slate-900 font-semibold">HR Analytics</span>
@@ -788,7 +1021,10 @@ export default function ModulePage({
           <Link href="/dashboard" className="hover:text-slate-800 transition-colors">Dashboard</Link>
           <span>/</span>
           <Link href={`/dashboard/${pillarSlug}`} className="hover:text-slate-800 transition-colors flex items-center gap-1">
-            <span>{pillar.emoji}</span> {pillar.name}
+            {(() => {
+            const Logo = getPillarLogo(pillarSlug);
+            return Logo ? <Logo size={16} className="text-slate-500 inline" /> : <span>{pillar.emoji}</span>;
+          })()} {pillar.name}
           </Link>
           <span>/</span>
           <span className="text-slate-900 font-semibold">Employee Self-Service</span>
@@ -803,6 +1039,58 @@ export default function ModulePage({
     return (
       <div className="max-w-7xl mx-auto pb-20">
         <OrganizationalChart />
+      </div>
+    );
+  }
+
+  if (ultimateCustomer) {
+    return (
+      <div className="max-w-7xl mx-auto pb-20">
+        <UltimateCustomerManager
+          onBack={() => { setUltimateCustomer(null); loadData(); }}
+          initialData={ultimateCustomer.mode !== 'create' ? ultimateCustomer.data : undefined}
+          customerId={ultimateCustomer.id}
+          readOnly={ultimateCustomer.mode === 'view'}
+        />
+      </div>
+    );
+  }
+
+  if (ultimateDeal) {
+    return (
+      <div className="max-w-7xl mx-auto pb-20">
+        <UltimateDealManager
+          onBack={() => { setUltimateDeal(null); loadData(); }}
+          initialData={ultimateDeal.mode !== 'create' ? ultimateDeal.data : undefined}
+          dealId={ultimateDeal.id}
+          readOnly={ultimateDeal.mode === 'view'}
+        />
+      </div>
+    );
+  }
+
+  if (ultimateInvoice) {
+    return (
+      <div className="max-w-7xl mx-auto pb-20">
+        <UltimateInvoiceManager
+          onBack={() => { setUltimateInvoice(null); loadData(); setInvoiceStatsRefreshKey(k => k + 1); }}
+          initialData={ultimateInvoice.mode !== 'create' ? ultimateInvoice.data : undefined}
+          invoiceId={ultimateInvoice.id}
+          readOnly={ultimateInvoice.mode === 'view'}
+        />
+      </div>
+    );
+  }
+
+  if (ultimateLead) {
+    return (
+      <div className="max-w-7xl mx-auto pb-20">
+        <UltimateLeadManager
+          onBack={() => { setUltimateLead(null); loadData(); }}
+          initialData={ultimateLead.mode !== 'create' ? ultimateLead.data : undefined}
+          leadId={ultimateLead.id}
+          readOnly={ultimateLead.mode === 'view'}
+        />
       </div>
     );
   }
@@ -828,7 +1116,10 @@ export default function ModulePage({
         <Link href="/dashboard" className="hover:text-slate-800 transition-colors">Dashboard</Link>
         <span>/</span>
         <Link href={`/dashboard/${pillarSlug}`} className="hover:text-slate-800 transition-colors flex items-center gap-1">
-          <span>{pillar.emoji}</span> {pillar.name}
+          {(() => {
+            const Logo = getPillarLogo(pillarSlug);
+            return Logo ? <Logo size={16} className="text-slate-500 inline" /> : <span>{pillar.emoji}</span>;
+          })()} {pillar.name}
         </Link>
         <span>/</span>
         <span className="text-slate-900 font-semibold">{moduleConfig.title}</span>
@@ -934,6 +1225,133 @@ export default function ModulePage({
                   <Clock size={12} /> Draft
                 </div>
                 <div className="text-lg font-bold text-amber-600">{payrollSummary.totalDraft}</div>
+              </div>
+            </div>
+          )}
+
+          {/* Invoicing: Stats Cards */}
+          {moduleSlug === "invoicing" && invoiceStats && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div className="bg-white border border-slate-100 rounded-xl px-4 py-3 shadow-sm">
+                <div className="flex items-center gap-2 text-slate-400 text-xs font-medium mb-1">
+                  <DollarSign size={12} /> Outstanding
+                </div>
+                <div className="text-lg font-bold text-amber-600">{(invoiceStats.totalOutstanding || 0).toLocaleString()}</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">{invoiceStats.outstandingCount} invoice(s)</div>
+              </div>
+              <div className="bg-white border border-slate-100 rounded-xl px-4 py-3 shadow-sm">
+                <div className="flex items-center gap-2 text-slate-400 text-xs font-medium mb-1">
+                  <Clock size={12} /> Overdue
+                </div>
+                <div className="text-lg font-bold text-red-500">{(invoiceStats.totalOverdue || 0).toLocaleString()}</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">{invoiceStats.overdueCount} overdue</div>
+              </div>
+              <div className="bg-white border border-slate-100 rounded-xl px-4 py-3 shadow-sm">
+                <div className="flex items-center gap-2 text-slate-400 text-xs font-medium mb-1">
+                  <DollarSign size={12} /> Monthly Revenue
+                </div>
+                <div className="text-lg font-bold text-emerald-600">{(invoiceStats.monthlyRevenue || 0).toLocaleString()}</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">{new Date().toLocaleString('default', { month: 'long' })} {new Date().getFullYear()}</div>
+              </div>
+              <div className="bg-white border border-slate-100 rounded-xl px-4 py-3 shadow-sm">
+                <div className="flex items-center gap-2 text-slate-400 text-xs font-medium mb-1">
+                  <CheckCircle size={12} /> Paid
+                </div>
+                <div className="text-lg font-bold text-green-600">{(invoiceStats.totalPaid || 0).toLocaleString()}</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">{invoiceStats.paidCount} paid</div>
+              </div>
+              <div className="bg-white border border-slate-100 rounded-xl px-4 py-3 shadow-sm">
+                <div className="flex items-center gap-2 text-slate-400 text-xs font-medium mb-1">
+                  <Send size={12} /> Sent
+                </div>
+                <div className="text-lg font-bold text-blue-600">{invoiceStats.sentCount}</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">awaiting payment</div>
+              </div>
+              <div className="bg-white border border-slate-100 rounded-xl px-4 py-3 shadow-sm">
+                <div className="flex items-center gap-2 text-slate-400 text-xs font-medium mb-1">
+                  <FileText size={12} /> Drafts
+                </div>
+                <div className="text-lg font-bold text-slate-600">{invoiceStats.draftCount}</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">not yet sent</div>
+              </div>
+            </div>
+          )}
+          {/* Invoicing: Revenue Bar Chart */}
+          {moduleSlug === "invoicing" && invoiceStats && invoiceStats.monthlyRevenueData && invoiceStats.monthlyRevenueData.length > 0 && (
+            <div className="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
+                    <DollarSign size={13} className="text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800">Monthly Revenue Trend</h3>
+                    <p className="text-[10px] text-slate-400">Last 12 months · PAID invoices only</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-emerald-600">
+                    {(invoiceStats.monthlyRevenueData.reduce((s: number, d: any) => s + d.revenue, 0) || 0).toLocaleString()} ETB
+                  </p>
+                  <p className="text-[10px] text-slate-400">Total revenue (12mo)</p>
+                </div>
+              </div>
+              <div className="w-full h-52">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={(() => {
+                      const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                      return invoiceStats.monthlyRevenueData.map((d: any) => ({
+                        name: `${MONTH_NAMES[(d.month || 1) - 1]} '${String(d.year || 0).slice(2)}`,
+                        revenue: d.revenue || 0,
+                        count: d.count || 0,
+                      }));
+                    })()}
+                    margin={{ top: 8, right: 8, left: -10, bottom: 0 }}
+                  >
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 10, fill: '#94a3b8' }}
+                      axisLine={true}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 10, fill: '#94a3b8' }} 
+                      axisLine={false}
+                      tickLine={false}
+                      {...{ tickFormatter: (val: number) => val >= 1000 ? `${(val / 1000).toFixed(0)}k` : String(val) }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: '10px',
+                        border: '1px solid #e2e8f0',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                        fontSize: '12px',
+                        padding: '8px 12px',
+                      } as any}
+                      formatter={(value: number, name: string) => {
+                        if (name === 'revenue') return [`${value.toLocaleString()} ETB`, 'Revenue'];
+                        return [value, name];
+                      }}
+                      labelStyle={{ fontWeight: 600, fontSize: '12px', marginBottom: '4px' }}
+                    />
+                    <Bar
+                      dataKey="revenue"
+                      fill="#059669"
+                      radius={[4, 4, 0, 0] as any}
+                      barSize={32}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
+          {moduleSlug === "invoicing" && isLoadingInvoiceStats && !invoiceStats && (
+            <div className="bg-white border border-slate-100 rounded-xl p-6 text-center text-sm text-slate-400">
+              <div className="flex items-center justify-center gap-2">
+                <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
+                Loading invoice statistics...
               </div>
             </div>
           )}
@@ -1080,7 +1498,40 @@ export default function ModulePage({
                                 </button>
                               </div>
                             ) : (
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-1 flex-wrap">
+                                {/* Status-based action buttons */}
+                                {(() => {
+                                  const statusVal = row.status || row.stage;
+                                  if (statusVal) {
+                                    const actions = STATUS_ACTIONS[statusVal] || [];
+                                    return (
+                                      <>
+                                        {actions.map((act, ai) => (
+                                          <button
+                                            key={ai}
+                                            onClick={() => handleStatusUpdate(row.prismaId || row.id, act.nextStatus)}
+                                            disabled={isUpdatingStatus === (row.prismaId || row.id)}
+                                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-slate-500 transition-colors ${act.color}`}
+                                            title={act.label}
+                                          >
+                                            {act.icon} {act.label}
+                                          </button>
+                                        ))}
+                                        {CANCELABLE_STATUSES.has(statusVal) && (
+                                          <button
+                                            onClick={() => handleStatusUpdate(row.prismaId || row.id, "Cancelled")}
+                                            disabled={isUpdatingStatus === (row.prismaId || row.id)}
+                                            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-slate-500 hover:bg-red-50 hover:text-red-500 transition-colors"
+                                            title="Cancel"
+                                          >
+                                            <XCircle size={11} className="text-current" /> Cancel
+                                          </button>
+                                        )}
+                                      </>
+                                    );
+                                  }
+                                  return null;
+                                })()}
                                 <button onClick={() => handleOpenModal("view", row)} className="w-7 h-7 rounded-lg hover:bg-blue-50 flex items-center justify-center text-slate-400 hover:text-blue-600 transition-colors" title="View">
                                   <Eye size={13} className="text-black" />
                                 </button>
@@ -1203,6 +1654,10 @@ export default function ModulePage({
                                   col.label.toLowerCase().includes(" no");
                 const isPhoneField = col.key.toLowerCase().includes("phone") || col.label.toLowerCase().includes("phone");
                 const isEmployeeField = col.type === "avatar" && (col.key.toLowerCase() === "employee" || col.label.toLowerCase() === "employee");
+                const isProductField = pillarSlug === "inventory-warehouse" &&
+                  col.key.toLowerCase() === "product";
+                const isWarehouseField = pillarSlug === "inventory-warehouse" &&
+                  col.key.toLowerCase() === "warehouse";
                 const isViewOnly = modalMode === "view" || isIdField;
                 const isDateField = col.type === "date";
                 // Format ISO date string to YYYY-MM-DD for <input type="date">
@@ -1212,7 +1667,32 @@ export default function ModulePage({
                 return (
                   <div key={i} className="flex flex-col gap-1">
                     <label className="text-xs font-semibold text-slate-700">{col.label}</label>
-                    {isEmployeeField ? (
+                    {isProductField ? (
+                      <ProductAutocomplete
+                        value={formData[col.key] || ""}
+                        onChange={(name, productId, productSku) => {
+                          setFormData((prev: any) => ({
+                            ...prev,
+                            [col.key]: name,
+                            ...(productId ? { productId } : {}),
+                            ...(productSku ? { sku: productSku } : {}),
+                          }));
+                        }}
+                        disabled={isViewOnly}
+                      />
+                    ) : isWarehouseField ? (
+                      <WarehouseAutocomplete
+                        value={formData[col.key] || ""}
+                        onChange={(name, warehouseId) => {
+                          setFormData((prev: any) => ({
+                            ...prev,
+                            [col.key]: name,
+                            ...(warehouseId ? { warehouseId } : {}),
+                          }));
+                        }}
+                        disabled={isViewOnly}
+                      />
+                    ) : isEmployeeField ? (
                       <EmployeeAutocomplete
                         value={formData[col.key] || ""}
                         onChange={(name, employeeId) => {
@@ -1225,33 +1705,66 @@ export default function ModulePage({
                         disabled={isViewOnly}
                       />
                     ) : col.type === "select" && col.options ? (
-                      <div className="flex flex-col gap-1.5">
-                        <select
-                          value={col.options.includes(formData[col.key]) ? formData[col.key] : ""}
-                          onChange={e => {
-                            setFormData({ ...formData, [col.key]: e.target.value });
-                          }}
-                          disabled={isViewOnly}
-                          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-slate-900 bg-white text-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
-                        >
-                          <option value="">Select {col.label}...</option>
-                          {col.options.map(opt => (
-                            <option key={opt} value={opt}>{opt}</option>
-                          ))}
-                          <option value="__other__">Other (Please specify)</option>
-                        </select>
-                        {(formData[col.key] === "__other__" || (formData[col.key] && !col.options.includes(formData[col.key]))) && (
-                          <input
-                            type="text"
-                            value={formData[col.key] === "__other__" ? "" : formData[col.key]}
-                            onChange={e => setFormData({ ...formData, [col.key]: e.target.value })}
+                      <>
+                        {col.options.length > 8 ? (
+                          <SearchableSelect
+                            value={formData[col.key] || ""}
+                            onChange={(val) => setFormData({ ...formData, [col.key]: val })}
+                            options={col.options}
+                            placeholder={`Select ${col.label}...`}
                             disabled={isViewOnly}
-                            placeholder="Please specify..."
-                            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-slate-900 bg-white text-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
-                            autoFocus
                           />
+                        ) : (
+                          <div className="flex flex-col gap-1.5">
+                            <select
+                              value={col.options.includes(formData[col.key]) ? formData[col.key] : ""}
+                              onChange={e => {
+                                setFormData({ ...formData, [col.key]: e.target.value });
+                              }}
+                              disabled={isViewOnly}
+                              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-slate-900 bg-white text-slate-900 disabled:bg-slate-50 disabled:text-slate-500 appearance-none cursor-pointer bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[right_8px_center] pr-8"
+                            >
+                              <option value="">Select {col.label}...</option>
+                              {col.options.map(opt => (
+                                <option key={opt} value={opt}>{opt}</option>
+                              ))}
+                              <option value="__other__">Other (Please specify)</option>
+                            </select>
+                            {(formData[col.key] === "__other__" || (formData[col.key] && !col.options.includes(formData[col.key]))) && (
+                              <input
+                                type="text"
+                                value={formData[col.key] === "__other__" ? "" : formData[col.key]}
+                                onChange={e => setFormData({ ...formData, [col.key]: e.target.value })}
+                                disabled={isViewOnly}
+                                placeholder="Please specify..."
+                                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-slate-900 bg-white text-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
+                                autoFocus
+                              />
+                            )}
+                          </div>
                         )}
-                      </div>
+                        {/* If the user selected "Other" from the options (literal word) or typed a custom value not in the options, show a text input to specify */}
+                        {/* Note: exclude "__other__" here because it's handled by the native select's own sentinel handler above */}
+                        {(formData[col.key] === "Other" || (formData[col.key] && formData[col.key] !== "__other__" && !col.options.includes(formData[col.key]))) && (
+                          <div className="mt-1.5">
+                            <label className="text-[11px] font-medium text-slate-500 mb-1 block">
+                              Please specify your custom {col.label.toLowerCase()}:
+                            </label>
+                            <input
+                              type="text"
+                              value={formData[col.key] === "Other" ? "" : formData[col.key]}
+                              onChange={e => {
+                                const val = e.target.value;
+                                setFormData({ ...formData, [col.key]: val });
+                              }}
+                              disabled={isViewOnly}
+                              placeholder={`Type custom ${col.label.toLowerCase()}...`}
+                              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-slate-900 bg-white text-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
+                              autoFocus
+                            />
+                          </div>
+                        )}
+                      </>
                     ) : isPhoneField ? (
                       <div className={isViewOnly ? "pointer-events-none opacity-60" : ""}>
                         <PhoneInput

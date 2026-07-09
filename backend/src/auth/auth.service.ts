@@ -63,7 +63,7 @@ export class AuthService {
   private async generateTokens(userId: string, email: string, role: string, companyId = '', companyName = '') {
     const payload = { sub: userId, email, role, companyId, companyName };
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwt.signAsync(payload, { secret: process.env.JWT_SECRET || 'nexyovi-secret', expiresIn: '15m' }),
+      this.jwt.signAsync(payload, { secret: process.env.JWT_SECRET || 'nexyovi-secret', expiresIn: '24h' }),
       this.jwt.signAsync(payload, { secret: process.env.JWT_REFRESH_SECRET || 'nexyovi-refresh-secret', expiresIn: '7d' }),
     ]);
     return { accessToken, refreshToken };

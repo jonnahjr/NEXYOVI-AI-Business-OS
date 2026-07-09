@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { NEXYOVI_PILLARS, toSlug } from "@/lib/pillars";
+import { PillarLogoIcon } from "@/components/pillar-logos";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -79,7 +80,7 @@ export default function Sidebar() {
                     isPillarActive ? "text-black font-bold" : "text-black"
                   }`}
                 >
-                  <span className="text-base leading-none">{pillar.emoji}</span>
+                  <PillarLogoIcon slug={pillarSlug} size={20} className="text-black" emojiFallback={pillar.emoji} />
                   <span className="font-bold text-sm truncate">{pillar.name}</span>
                 </Link>
 

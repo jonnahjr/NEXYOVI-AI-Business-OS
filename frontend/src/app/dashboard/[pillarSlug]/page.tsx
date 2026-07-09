@@ -4,10 +4,14 @@ import { use, useEffect } from "react";
 import { notFound } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Box, BrainCircuit, Send, Users, Clock, CheckCircle, AlertTriangle, DollarSign, Building2, Plus, Eye, UserPlus, Briefcase, CalendarCheck, BarChart3, Activity, TrendingUp, ExternalLink, Package, Truck, ClipboardList, Zap, FileText } from "lucide-react";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer
+} from "recharts";
 import Link from "next/link";
 import { useState } from "react";
 import { NEXYOVI_PILLARS, toSlug } from "@/lib/pillars";
 import { getPillarConfig } from "@/lib/pillar-config";
+import { PillarLogoIcon } from "@/components/pillar-logos";
 
 export default function PillarPage({ params }: { params: Promise<{ pillarSlug: string }> }) {
   const resolvedParams = use(params);
@@ -136,7 +140,7 @@ function HRDashboard({ pillar, config, pillarSlug }: { pillar: any; config: any;
       {/* ── HEADER ─────────────────────────────────── */}
       <div className="border-b border-gray-200 pb-6">
         <div className="flex items-center gap-3 mb-3">
-          <span className="text-4xl">{pillar.emoji}</span>
+          <PillarLogoIcon slug={pillarSlug} size={40} className="text-black" emojiFallback={pillar.emoji} />
           <div>
             <h1 className="text-3xl font-bold text-black tracking-tight">{pillar.name}</h1>
             <p className="text-sm text-gray-500 font-normal mt-0.5">{pillar.desc}</p>
@@ -520,7 +524,7 @@ function CRMDashboard({ pillar, config, pillarSlug }: { pillar: any; config: any
       {/* ── HEADER ─────────────────────────────────── */}
       <div className="border-b border-gray-200 pb-6">
         <div className="flex items-center gap-3 mb-3">
-          <span className="text-4xl">{pillar.emoji}</span>
+          <PillarLogoIcon slug={pillarSlug} size={40} className="text-black" emojiFallback={pillar.emoji} />
           <div>
             <h1 className="text-3xl font-bold text-black tracking-tight">{pillar.name}</h1>
             <p className="text-sm text-gray-500 font-normal mt-0.5">{pillar.desc}</p>
@@ -894,7 +898,7 @@ function InventoryDashboard({ pillar, config, pillarSlug }: { pillar: any; confi
       {/* ── HEADER ─────────────────────────────────── */}
       <div className="border-b border-gray-200 pb-6">
         <div className="flex items-center gap-3 mb-3">
-          <span className="text-4xl">{pillar.emoji}</span>
+          <PillarLogoIcon slug={pillarSlug} size={40} className="text-black" emojiFallback={pillar.emoji} />
           <div>
             <h1 className="text-3xl font-bold text-black tracking-tight">{pillar.name}</h1>
             <p className="text-sm text-gray-500 font-normal mt-0.5">{pillar.desc}</p>
@@ -1157,6 +1161,9 @@ function FinanceDashboard({ pillar, config, pillarSlug }: { pillar: any; config:
   const [invoices, setInvoices] = useState<any[]>([]);
   const [budgets, setBudgets] = useState<{ name: string; amount: number; spent: number; pct: number }[]>([]);
   const [assets, setAssets] = useState<any[]>([]);
+  const [cashFlowData, setCashFlowData] = useState<any[]>([]);
+  const [monthlyRevenueData, setMonthlyRevenueData] = useState<any[]>([]);
+  const [expenseCategoryData, setExpenseCategoryData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [aiInput, setAiInput] = useState("");
   const [aiMessages, setAiMessages] = useState([
@@ -1204,7 +1211,46 @@ function FinanceDashboard({ pillar, config, pillarSlug }: { pillar: any; config:
         const astData = await astRes.json();
         const asts = astData?.data || [];
 
+        // Fetch cash flow data for charts
+        const cfRes = await fetch(
+          "http://localhost:3002/api/v1/modules/finance-accounting/cash-flow",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const cfData = await cfRes.json();
+        const cfs = cfData?.data || [];
+
         if (cancelled) return;
+
+        // Compute monthly revenue from invoices
+        const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const revenueByMonth: Record<string, { month: string; revenue: number; count: number }> = {};
+        invs.filter((i: any) => (i.status || '').toLowerCase() === 'paid').forEach((inv: any) => {
+          const d = inv.date || inv.issueDate;
+          if (!d) return;
+          const dt = new Date(d);
+          const key = `${monthNames[dt.getMonth()]} ${dt.getFullYear()}`;
+          if (!revenueByMonth[key]) revenueByMonth[key] = { month: key, revenue: 0, count: 0 };
+          revenueByMonth[key].revenue += Number(inv.total || inv.amount || 0);
+          revenueByMonth[key].count++;
+        });
+        const revenueArr = Object.values(revenueByMonth).sort((a, b) => {
+          const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          const [aM, aY] = a.month.split(' ');
+          const [bM, bY] = b.month.split(' ');
+          const aIdx = Number(aY) * 12 + months.indexOf(aM);
+          const bIdx = Number(bY) * 12 + months.indexOf(bM);
+          return aIdx - bIdx;
+        });
+
+        // Compute expenses by category
+        const catMap: Record<string, { name: string; value: number; count: number }> = {};
+        exps.forEach((exp: any) => {
+          const cat = (exp.category || 'Other').replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+          if (!catMap[cat]) catMap[cat] = { name: cat, value: 0, count: 0 };
+          catMap[cat].value += Number(exp.amount || 0);
+          catMap[cat].count++;
+        });
+        const catArr = Object.values(catMap).sort((a, b) => b.value - a.value);
 
         // Compute stats
         const totalExpenses = exps.length;
@@ -1242,6 +1288,9 @@ function FinanceDashboard({ pillar, config, pillarSlug }: { pillar: any; config:
         setInvoices(invs.slice(0, 5));
         setBudgets(budgetArray);
         setAssets(asts.slice(0, 4));
+        setCashFlowData(cfs.slice(0, 12));
+        setMonthlyRevenueData(revenueArr);
+        setExpenseCategoryData(catArr.slice(0, 8));
       } catch (err) {
         console.error("Failed to load finance data:", err);
         setStats({ totalExpenses: 0, totalExpenseAmount: 0, totalInvoiceAmount: 0, pendingInvoices: 0, totalBudgets: 0, budgetUtilization: 0, totalAssets: 0, assetValue: 0 });
@@ -1295,7 +1344,7 @@ function FinanceDashboard({ pillar, config, pillarSlug }: { pillar: any; config:
       {/* ── HEADER ─────────────────────────────────── */}
       <div className="border-b border-gray-200 pb-6">
         <div className="flex items-center gap-3 mb-3">
-          <span className="text-4xl">{pillar.emoji}</span>
+          <PillarLogoIcon slug={pillarSlug} size={40} className="text-black" emojiFallback={pillar.emoji} />
           <div>
             <h1 className="text-3xl font-bold text-black tracking-tight">{pillar.name}</h1>
             <p className="text-sm text-gray-500 font-normal mt-0.5">{pillar.desc}</p>
@@ -1328,6 +1377,164 @@ function FinanceDashboard({ pillar, config, pillarSlug }: { pillar: any; config:
           </motion.div>
         ))}
       </div>
+
+      {/* ── CHARTS ROW 1: Revenue + Expense Categories ───────────── */}
+      {(!loading && (monthlyRevenueData.length > 0 || expenseCategoryData.length > 0)) && (
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Revenue Trend Chart */}
+          {monthlyRevenueData.length > 0 && (
+            <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+                    <TrendingUp size={15} className="text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-black">Revenue Trend</h3>
+                    <p className="text-[10px] text-gray-400">Monthly revenue from paid invoices</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-emerald-600">
+                    {monthlyRevenueData.reduce((s: number, d: any) => s + d.revenue, 0).toLocaleString()} ETB
+                  </p>
+                  <p className="text-[10px] text-gray-400">Total revenue</p>
+                </div>
+              </div>
+              <div className="w-full h-52">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={monthlyRevenueData} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
+                    <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={true} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                    <Tooltip
+                      contentStyle={{ borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', fontSize: '12px', padding: '8px 12px' }}
+                      formatter={(value: number, name: string) => [`ETB ${value.toLocaleString()}`, name === 'revenue' ? 'Revenue' : name]}
+                      labelStyle={{ fontWeight: 600, fontSize: '12px', marginBottom: '4px' }}
+                    />
+                    <Bar dataKey="revenue" fill="#059669" radius={[4, 4, 0, 0]} barSize={28} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
+          {/* Expenses by Category Pie */}
+          {expenseCategoryData.length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-xl p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+                  <DollarSign size={15} className="text-red-500" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-black">Expenses by Category</h3>
+                  <p className="text-[10px] text-gray-400">{expenseCategoryData.length} categories</p>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                {expenseCategoryData.slice(0, 5).map((cat: any, idx: number) => {
+                  const total = expenseCategoryData.reduce((s: number, c: any) => s + c.value, 0);
+                  const pct = total > 0 ? Math.round((cat.value / total) * 100) : 0;
+                  const COLORS = ['#059669', '#2563eb', '#dc2626', '#d97706', '#7c3aed', '#0891b2', '#be123c', '#65a30d'];
+                  return (
+                    <div key={idx} className="flex items-center gap-2 py-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-medium text-black truncate">{cat.name}</span>
+                          <span className="text-[11px] font-bold text-gray-500 shrink-0 ml-2">{pct}%</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-gray-100 rounded-full mt-0.5 overflow-hidden">
+                          <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: COLORS[idx % COLORS.length] }} />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-3 pt-2 border-t border-gray-50 flex justify-between text-[10px] text-gray-400">
+                <span>{expenseCategoryData.reduce((s: number, c: any) => s + c.count, 0)} expenses</span>
+                <span>ETB {expenseCategoryData.reduce((s: number, c: any) => s + c.value, 0).toLocaleString()}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── CHARTS ROW 2: Cash Flow Trend ────────────────────────── */}
+      {(!loading && cashFlowData.length > 0) && (
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                <Activity size={15} className="text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-black">Cash Flow Trend</h3>
+                <p className="text-[10px] text-gray-400">Monthly inflows vs outflows</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-xs">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-sm bg-emerald-500" />
+                <span className="text-gray-500">Inflow</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-sm bg-red-500" />
+                <span className="text-gray-500">Outflow</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-sm bg-blue-600" />
+                <span className="text-gray-500">Net</span>
+              </div>
+            </div>
+          </div>
+          <div className="w-full h-60">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={cashFlowData} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
+                <XAxis dataKey="period" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={true} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false}  />
+                <Tooltip
+                  contentStyle={{ borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', fontSize: '12px', padding: '8px 12px' }}
+                  formatter={(value: number) => [`ETB ${value.toLocaleString()}`, '']}
+                  labelStyle={{ fontWeight: 600, fontSize: '12px', marginBottom: '4px' }}
+                />
+                <Bar dataKey="inflow" fill="#059669" radius={[4, 4, 0, 0]} barSize={12} />
+                <Bar dataKey="outflow" fill="#dc2626" radius={[4, 4, 0, 0]} barSize={12} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          {/* Cash Flow Summary Stats */}
+          <div className="grid grid-cols-3 gap-4 mt-4 pt-3 border-t border-gray-100">
+            {(() => {
+              const totalIn = cashFlowData.reduce((s: number, d: any) => s + (d.inflow || 0), 0);
+              const totalOut = cashFlowData.reduce((s: number, d: any) => s + (d.outflow || 0), 0);
+              const netPos = totalIn - totalOut;
+              const months = cashFlowData.length;
+              return (
+                <>
+                  <div className="text-center">
+                    <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Total Inflow</div>
+                    <div className="text-lg font-bold text-emerald-600">ETB {(totalIn / Math.max(1, months)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+                    <div className="text-[10px] text-gray-400">Avg / month</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Total Outflow</div>
+                    <div className="text-lg font-bold text-red-500">ETB {(totalOut / Math.max(1, months)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+                    <div className="text-[10px] text-gray-400">Avg / month</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Net Position</div>
+                    <div className={`text-lg font-bold ${netPos >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                      ETB {netPos.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    </div>
+                    <div className="text-[10px] text-gray-400">Total period</div>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        </div>
+      )}
 
       {/* ── MAIN CONTENT ROW 1 ──────────────────────── */}
       <div className="grid lg:grid-cols-3 gap-6">
@@ -1593,7 +1800,7 @@ function PillarPageContent({ pillar, config, pillarSlug }: { pillar: any; config
         <div className="relative z-10 flex flex-col md:flex-row gap-6 md:items-center justify-between">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-5xl">{pillar.emoji}</span>
+              <PillarLogoIcon slug={pillarSlug} size={52} className="text-white" emojiFallback={pillar.emoji} />
             </div>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">{pillar.name}</h1>
             <p className="text-white/70 text-sm font-light max-w-xl">{pillar.desc}</p>

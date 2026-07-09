@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import FileUploadField from "./FileUploadField";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import { useToast } from "@/components/ui/Toast";
 
 
@@ -35,8 +36,26 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 }
 
 function DropdownWithOther({ label, name, value, options, onChange, required, fullWidth }: any) {
+  const Wrapper = fullWidth ? FullField : Field;
+
+  // For long option lists, use the searchable select (handles custom values natively)
+  if (options.length > 8) {
+    return (
+      <Wrapper label={label} required={required}>
+        <SearchableSelect
+          value={value || ""}
+          onChange={(val) => onChange({ target: { name, value: val } })}
+          options={options}
+          placeholder={`Select ${label}...`}
+          className={inputClass + " cursor-pointer"}
+        />
+      </Wrapper>
+    );
+  }
+
+  // For short lists, use native select with "Other" option
   const isStandard = options.includes(value) || value === "" || !value;
-  const [isOther, setIsOther] = useState(!isStandard && value);
+  const [isOther, setIsOther] = useState(!isStandard && !!value);
 
   const handleSelectChange = (e: any) => {
     const val = e.target.value;
@@ -48,8 +67,6 @@ function DropdownWithOther({ label, name, value, options, onChange, required, fu
       onChange(e);
     }
   };
-
-  const Wrapper = fullWidth ? FullField : Field;
 
   return (
     <Wrapper label={label} required={required}>
@@ -67,7 +84,7 @@ function DropdownWithOther({ label, name, value, options, onChange, required, fu
         {isOther && (
           <input 
             name={name} 
-            value={isOther ? value : ""} 
+            value={value || ""} 
             onChange={onChange} 
             className={inputClass} 
             placeholder="Please specify" 

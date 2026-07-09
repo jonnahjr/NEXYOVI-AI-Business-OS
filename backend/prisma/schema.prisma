@@ -32,15 +32,23 @@ model Company {
   customers   Customer[]
   leads       Lead[]
   deals       Deal[]
-  products    Product[]
-  purchases   Purchase[]
-  invoices    Invoice[]
-  expenses    Expense[]
+  products      Product[]
+  purchases     Purchase[]
+  invoices      Invoice[]
+  expenses      Expense[]
+  stockMovements StockMovement[]
+  productBatches ProductBatch[]
+  cycleCounts    CycleCount[]
 
   // MEGA EXPANSION:
   projects     Project[]
   documents    Document[]
   workOrders   WorkOrder[]
+  machines             Machine[]
+  maintenanceRecords   MaintenanceRecord[]
+  qualityChecks        QualityCheck[]
+  productionSchedules  ProductionSchedule[]
+  billOfMaterials      BillOfMaterial[]
   reports      Report[]
   vehicles     Vehicle[]
   drivers      Driver[]
@@ -78,6 +86,11 @@ model Company {
   hrHelpRequests        HrHelpRequest[]
   biometricDevices      BiometricDevice[]
   payrollSetting        PayrollSetting?
+  journalEntries        JournalEntry[]
+  vatEntries            VatEntry[]
+  rfqs                  Rfq[]
+  tenders               Tender[]
+  approvalWorkflows     ApprovalWorkflow[]
 }
 
 // ============================================================
@@ -564,20 +577,41 @@ enum CustomerStatus {
 }
 
 model Lead {
-  id             String     @id @default(uuid())
+  id             String        @id @default(uuid())
   name           String
   email          String?
   phone          String?
   company        String?
-  source         LeadSource @default(OTHER)
-  status         LeadStatus @default(NEW)
-  score          Int        @default(0)
+  source         LeadSource    @default(OTHER)
+  status         LeadStatus    @default(NEW)
+  score          Int           @default(0)
   notes          String?
   estimatedValue Float?
   companyId      String
-  companyRef     Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  companyRef     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  activities     LeadActivity[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model LeadActivity {
+  id        String          @id @default(uuid())
+  type      ActivityType
+  title     String
+  notes     String?
+  outcome   String? // e.g. "Interested", "Not Interested", "Call Back Later", "Meeting Scheduled"
+  date      DateTime        @default(now())
+  leadId    String
+  lead      Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  createdAt DateTime        @default(now())
+}
+
+enum ActivityType {
+  CALL
+  EMAIL
+  MEETING
+  NOTE
+  TASK
 }
 
 enum LeadSource {
@@ -611,6 +645,7 @@ model Deal {
   customer    Customer? @relation(fields: [customerId], references: [id])
   companyId   String
   companyRef  Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  invoices    Invoice[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
@@ -631,6 +666,7 @@ model Product {
   id            String         @id @default(uuid())
   name          String
   sku           String
+  barcode       String?
   description   String?
   category      String?
   unit          String         @default("pcs")
@@ -638,14 +674,76 @@ model Product {
   sellPrice     Float          @default(0)
   stock         Int            @default(0)
   minStock      Int            @default(0)
+  maxStock      Int            @default(0)
   imageUrl      String?
   isActive      Boolean        @default(true)
   companyId     String
   company       Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
   purchaseItems PurchaseItem[]
   invoiceItems  InvoiceItem[]
+  stockMovements StockMovement[]
+  batches       ProductBatch[]
+  cycleCounts   CycleCount[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+}
+
+// ── STOCK MOVEMENT (tracks every stock change across all modules) ──
+model StockMovement {
+  id              String   @id @default(uuid())
+  quantityChange  Int      // positive = in, negative = out
+  type            String   // RECEIPT, ISSUE, TRANSFER_IN, TRANSFER_OUT, ADJUSTMENT, RETURN, SALE
+  referenceNo     String?  // linked document number (PO-001, GR-001, ST-001, etc.)
+  notes           String?
+  balanceBefore   Int      @default(0)
+  balanceAfter    Int      @default(0)
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  warehouseId     String?
+  warehouse       Warehouse? @relation(fields: [warehouseId], references: [id])
+  companyId       String
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+}
+
+// ── PRODUCT BATCH & SERIAL NUMBERS ───────────────────────────────
+model ProductBatch {
+  id                String    @id @default(uuid())
+  batchNumber       String?
+  serialNumber      String?
+  quantity          Int       @default(0)
+  expiryDate        DateTime?
+  manufacturingDate DateTime?
+  status            String    @default("ACTIVE") // ACTIVE, EXPIRED, DEPLETED
+  productId         String
+  product           Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  warehouseId       String?
+  warehouse         Warehouse? @relation(fields: [warehouseId], references: [id])
+  companyId         String
+  company           Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+// ── CYCLE COUNTS ─────────────────────────────────────────────────
+model CycleCount {
+  id               String   @id @default(uuid())
+  countNo          String
+  expectedQuantity Int      @default(0)
+  actualQuantity   Int      @default(0)
+  variance         Int      @default(0)
+  status           String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, APPROVED
+  countedBy        String?
+  countedAt        DateTime?
+  notes            String?
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  warehouseId      String?
+  warehouse        Warehouse? @relation(fields: [warehouseId], references: [id])
+  companyId        String
+  company          Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 // ============================================================
@@ -663,6 +761,8 @@ model Invoice {
   notes      String?
   customerId String?
   customer   Customer?     @relation(fields: [customerId], references: [id])
+  dealId     String?
+  deal       Deal?         @relation(fields: [dealId], references: [id])
   companyId  String
   company    Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
   items      InvoiceItem[]
@@ -839,6 +939,104 @@ enum WorkOrderStatus {
   COMPLETED
   CANCELLED
 }
+// ── MACHINE (for Machine Monitoring) ─────────────────────────────────
+model Machine {
+  id          String   @id @default(uuid())
+  machineNo   String
+  name        String
+  model       String?
+  status      String   @default("OPERATIONAL") // OPERATIONAL, IDLE, MAINTENANCE, OFFLINE
+  location    String?
+  utilization Int      @default(0) // percentage 0-100
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  maintenanceRecords   MaintenanceRecord[]
+  productionSchedules ProductionSchedule[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ── MAINTENANCE RECORD (for Maintenance module) ──────────────────────
+model MaintenanceRecord {
+  id          String   @id @default(uuid())
+  recordNo    String
+  title       String
+  description String?
+  type        String   @default("PREVENTIVE") // PREVENTIVE, CORRECTIVE, EMERGENCY, SCHEDULED
+  scheduledDate DateTime?
+  completedDate DateTime?
+  cost        Float    @default(0)
+  technician  String?
+  status      String   @default("PLANNED") // PLANNED, IN_PROGRESS, COMPLETED, CANCELLED
+  machineId   String
+  machine     Machine  @relation(fields: [machineId], references: [id])
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ── QUALITY CHECK (for Quality Control module) ───────────────────────
+model QualityCheck {
+  id          String   @id @default(uuid())
+  checkNo     String
+  productId   String
+  inspector   String?
+  result      String   @default("PENDING") // PASS, FAIL, PENDING, REWORK
+  notes       String?
+  checkedAt   DateTime @default(now())
+  workOrderId String?
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ── PRODUCTION SCHEDULE (for Production Scheduling module) ───────────
+model ProductionSchedule {
+  id          String   @id @default(uuid())
+  scheduleNo  String
+  workOrderId String
+  machineId   String?
+  machine     Machine? @relation(fields: [machineId], references: [id])
+  startDate   DateTime?
+  endDate     DateTime?
+  priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status      String   @default("SCHEDULED") // SCHEDULED, IN_PROGRESS, COMPLETED, DELAYED, CANCELLED
+  notes       String?
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ── BILL OF MATERIAL (for Bills of Materials BOM module) ─────────────
+model BillOfMaterial {
+  id          String   @id @default(uuid())
+  name        String
+  version     String   @default("1.0")
+  productId   String
+  totalCost   Float    @default(0)
+  status      String   @default("ACTIVE") // ACTIVE, INACTIVE, ARCHIVED
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  items       BomItem[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BomItem {
+  id          String        @id @default(uuid())
+  quantity    Float
+  unitCost    Float         @default(0)
+  totalCost   Float         @default(0)
+  bomId       String
+  bom         BillOfMaterial @relation(fields: [bomId], references: [id], onDelete: Cascade)
+  productId   String
+  companyId   String
+  createdAt   DateTime      @default(now())
+}
+
 
 // ============================================================
 // ANALYTICS & REPORTING
@@ -948,15 +1146,22 @@ enum CampaignStatus {
 // WAREHOUSE MODULE
 // ============================================================
 model Warehouse {
-  id        String   @id @default(uuid())
-  name      String
-  location  String?
-  capacity  Int?
-  isActive  Boolean  @default(true)
-  companyId String
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  name        String
+  code        String?  // e.g. WH-001, MAIN, NORTH
+  location    String?
+  capacity    Int?
+  managerName String?
+  phone       String?
+  email       String?
+  isActive    Boolean  @default(true)
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  stockMovements StockMovement[]
+  batches        ProductBatch[]
+  cycleCounts    CycleCount[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 // ============================================================
@@ -974,6 +1179,7 @@ model Vendor {
   companyId String
   company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
   contracts Contract[]
+  rfqs      Rfq[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
@@ -1001,6 +1207,57 @@ enum ContractStatus {
   TERMINATED
 }
 
+// ── RFQ (Request for Quotation) ────────────────────────────────────
+model Rfq {
+  id          String   @id @default(uuid())
+  rfqNo       String
+  title       String
+  description String?
+  requester   String?
+  vendorId    String?
+  vendor      Vendor?  @relation(fields: [vendorId], references: [id])
+  dueDate     DateTime?
+  total       Float    @default(0)
+  status      String   @default("Draft") // Draft, Sent, Received, Awarded, Cancelled
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ── TENDER MANAGEMENT ─────────────────────────────────────────────
+model Tender {
+  id          String   @id @default(uuid())
+  tenderNo    String
+  title       String
+  description String?
+  department  String?
+  issueDate   DateTime @default(now())
+  closingDate DateTime?
+  budget      Float    @default(0)
+  status      String   @default("Open") // Open, Under Evaluation, Awarded, Cancelled, Closed
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ── APPROVAL WORKFLOW ─────────────────────────────────────────────
+model ApprovalWorkflow {
+  id          String   @id @default(uuid())
+  requestNo   String
+  module      String   // e.g. Purchase Request, Contract, Tender
+  recordId    String?
+  requestedBy String?
+  approver    String?
+  notes       String?
+  status      String   @default("Pending") // Pending, Approved, Rejected, In Progress
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 // ============================================================
 // FINANCE: FIXED ASSETS & BUDGETS
 // ============================================================
@@ -1017,6 +1274,22 @@ model FixedAsset {
   company          Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+}
+
+// ── VAT ENTRY (Tax & VAT module) ────────────────────────────────
+model VatEntry {
+  id            String   @id @default(uuid())
+  date          DateTime @default(now())
+  ref           String
+  description   String
+  taxableAmount Float    @default(0)
+  vatAmount     Float    @default(0)
+  type          String   @default("Output VAT (Sales)") // Output VAT (Sales), Input VAT (Purchases)
+  status        String   @default("Pending") // Filed, Pending, Current
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Budget {
@@ -1405,4 +1678,19 @@ model PayrollSetting {
 
   createdAt                    DateTime @default(now())
   updatedAt                    DateTime @updatedAt
+}
+
+model JournalEntry {
+  id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  date        DateTime
+  ref         String
+  account     String
+  description String?
+  debit       Float    @default(0)
+  credit      Float    @default(0)
+  status      String   @default("Posted")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import DemoModal from "./DemoModal";
 import { toSlug } from "@/lib/pillars";
+import { PillarLogoIcon } from "@/components/pillar-logos";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -128,7 +129,7 @@ export default function HeroDashboard({ user }: { user: any }) {
                 className="bg-slate-900 rounded-2xl p-6 shadow-md hover:bg-slate-800 transition-all cursor-pointer group h-full"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-2xl">{p.emoji}</span>
+                  <PillarLogoIcon slug={toSlug(p.name)} size={28} className="text-white" emojiFallback={p.emoji} />
                   <span className="text-[10px] font-bold bg-white/10 text-white/50 px-2 py-1 rounded-lg group-hover:bg-white/20 transition-colors">
                     {p.count} features
                   </span>
