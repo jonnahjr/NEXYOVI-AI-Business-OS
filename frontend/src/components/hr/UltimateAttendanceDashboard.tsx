@@ -770,8 +770,8 @@ export default function UltimateAttendanceDashboard() {
           )}
 
           {/* ── ATTENDANCE TABLE ─────────────────────────────── */}
-          <div className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
               <h3 className="text-sm font-bold text-gray-900">
                 {showHistory ? "Historical Records" : "Today's Records"}
                 <span className="text-gray-400 font-normal ml-1.5">
@@ -810,18 +810,18 @@ export default function UltimateAttendanceDashboard() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="text-left px-5 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Employee</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Check In</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Check Out</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Hours</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Status</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Device</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Bio</th>
-                    <th className="text-right px-5 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Action</th>
+                  <tr className="border-b border-slate-200 bg-slate-100">
+                    <th className="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">Employee</th>
+                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">Check In</th>
+                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">Check Out</th>
+                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">Hours</th>
+                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">Status</th>
+                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">Device</th>
+                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">Bio</th>
+                    <th className="text-right px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody>
                   {loading ? (
                     <tr>
                       <td colSpan={8} className="px-5 py-16 text-center">
@@ -854,7 +854,7 @@ export default function UltimateAttendanceDashboard() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: i * 0.03 }}
-                        className="hover:bg-gray-50/80 transition-colors"
+                        className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors"
                       >
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-3">
@@ -953,7 +953,7 @@ export default function UltimateAttendanceDashboard() {
 
             {/* Pagination */}
             {!showHistory && !loading && filteredAttendances.length > ITEMS_PER_PAGE && (
-              <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100 bg-gray-50/50">
+              <div className="flex items-center justify-between px-5 py-3 border-t border-slate-200 bg-slate-100">
                 <span className="text-xs text-gray-500">
                   Showing {(page - 1) * ITEMS_PER_PAGE + 1}–{Math.min(page * ITEMS_PER_PAGE, filteredAttendances.length)} of {filteredAttendances.length}
                 </span>

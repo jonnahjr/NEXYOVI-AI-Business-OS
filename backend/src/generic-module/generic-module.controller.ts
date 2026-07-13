@@ -154,6 +154,10 @@ export class GenericModuleController {
         const data = await this.genericModuleService.searchWarehouses(companyId, search);
         return { data };
       }
+      if (pillarSlug === 'manufacturing' && (moduleSlug === 'machine-monitoring' || moduleSlug === 'maintenance' || moduleSlug === 'production-scheduling')) {
+        const data = await this.genericModuleService.searchMachines(companyId, search);
+        return { data };
+      }
     }
     const data = await this.genericModuleService.getData(pillarSlug, moduleSlug, companyId);
     return { data };

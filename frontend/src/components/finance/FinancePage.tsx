@@ -866,11 +866,11 @@ export default function FinancePage({ pillarSlug, moduleSlug }: FinancePageProps
       )}
 
       {/* ── DATA TABLE ───────────────────────────── */}
-      <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-slate-50 border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50">
+              <tr className="border-b border-slate-200 bg-slate-100">
                 {moduleConfig.columns.map((col, i) => (
                   <th key={i} className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">
                     {col.label}
@@ -904,7 +904,7 @@ export default function FinancePage({ pillarSlug, moduleSlug }: FinancePageProps
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: rowIdx * 0.04 }}
-                    className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors"
+                    className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors"
                   >
                     {moduleConfig.columns.map((col, colIdx) => (
                       <td key={colIdx} className="px-4 py-3.5 whitespace-nowrap">
@@ -956,7 +956,7 @@ export default function FinancePage({ pillarSlug, moduleSlug }: FinancePageProps
             </tbody>
           </table>
         </div>
-        <div className="px-4 py-3 border-t border-slate-50 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
+        <div className="px-4 py-3 border-t border-slate-200 bg-slate-100 flex items-center justify-between text-xs text-slate-500">
           <span>Showing {filteredRows.length} of {rows.length} records</span>
         </div>
       </div>

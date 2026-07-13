@@ -25,11 +25,22 @@ import HRAnalyticsDashboard from "@/components/hr/HRAnalyticsDashboard";
 import EmployeeSelfService from "@/components/hr/EmployeeSelfService";
 import OrganizationalChart from "@/components/hr/OrganizationalChart";
 import BarcodeQRPage from "@/components/inventory/BarcodeQRPage";
+import GPSTrackingPage from "@/components/logistics/GPSTrackingPage";
+import DriverManagementPage from "@/components/logistics/DriverManagementPage";
+import RouteOptimizationPage from "@/components/logistics/RouteOptimizationPage";
+import FuelManagementPage from "@/components/logistics/FuelManagementPage";
+import DeliveryTrackingPage from "@/components/logistics/DeliveryTrackingPage";
+import ShipmentManagementPage from "@/components/logistics/ShipmentManagementPage";
+import LogisticsAnalyticsPage from "@/components/logistics/LogisticsAnalyticsPage";
 import FinancePage from "@/components/finance/FinancePage";
+import ProjectManagementPage from "@/components/project/ProjectManagementPage";
+import DocumentManagementPage from "@/components/document/DocumentManagementPage";
 import EmployeeAutocomplete from "@/components/ui/EmployeeAutocomplete";
 import SearchableSelect from "@/components/ui/SearchableSelect";
 import ProductAutocomplete from "@/components/ui/ProductAutocomplete";
 import WarehouseAutocomplete from "@/components/ui/WarehouseAutocomplete";
+import MachineAutocomplete from "@/components/ui/MachineAutocomplete";
+import BomItemsEditor from "@/components/ui/BomItemsEditor";
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import PhoneInput from "react-phone-input-2";
@@ -72,7 +83,7 @@ const STATUS_COLORS: Record<string, string> = {
   "On Track":         "bg-slate-100 text-slate-900",
   "At Risk":          "bg-slate-100 text-slate-900",
   "Delayed":          "bg-slate-100 text-slate-900",
-  "On Route":         "bg-slate-100 text-slate-900",
+  "In Use":         "bg-slate-100 text-slate-900",
   "Available":        "bg-slate-100 text-slate-900",
   "Maintenance":      "bg-slate-100 text-slate-900",
   "Present":          "bg-slate-100 text-slate-900",
@@ -770,7 +781,7 @@ export default function ModulePage({
                           label.includes(" id") || 
                           label.includes(" no");
         
-        if (isIdField) {
+        if (isIdField && !(pillarSlug === "logistics-fleet" && col.key === "plate")) {
           // Use col-specific 3-letter tag after the company abbreviation
           const tag = key === "id" ? "" : `-${col.key.substring(0, 3).toUpperCase()}`;
           initialData[col.key] = `${companyAbbr}${tag}-${nextNum}`;
@@ -793,7 +804,7 @@ export default function ModulePage({
       const method = modalMode === "edit" ? "PUT" : "POST";
 
       // Strip auto-generated & display-only fields that Prisma wouldn't understand
-      const { createdAt, updatedAt, id, prismaId, remainingDays, leaveBalances, employee, ...cleanData } = formData;
+      const { createdAt, updatedAt, id, prismaId, remainingDays, leaveBalances, employee, itemsCount, ...cleanData } = formData;
       
       // Only remove 'name' if this module doesn't have a name column in its config
       // (e.g. employee-management computes name from firstName+lastName.
@@ -1104,6 +1115,111 @@ export default function ModulePage({
           employeeId={ultimateHR.id}
           readOnly={ultimateHR.mode === 'view'}
         />
+      </div>
+    );
+  }
+  // Specialized route for Project Management (all 9 modules)
+  if (pillarSlug === "project-management") {
+    return (
+      <div className="max-w-7xl mx-auto pb-20">
+        <ProjectManagementPage pillarSlug={pillarSlug} moduleSlug={moduleSlug} />
+
+      </div>
+    );
+  }
+  // Specialized route for Document Management (all 7 modules)
+  if (pillarSlug === "document-management") {
+    return (
+      <div className="max-w-7xl mx-auto pb-20">
+        <DocumentManagementPage pillarSlug={pillarSlug} moduleSlug={moduleSlug} />
+      </div>
+    );
+  }
+
+
+
+  // Specialized routes for Logistics & Fleet modules
+  if (pillarSlug === "logistics-fleet" && moduleSlug === "gps-tracking") {
+    return (
+      <div className="max-w-7xl mx-auto pb-20">
+        <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
+          <span className="hover:text-slate-800 transition-colors cursor-pointer" onClick={() => window.history.back()}>Dashboard</span>
+          <span>/</span>
+          <span className="text-slate-900 font-semibold">GPS Tracking</span>
+        </div>
+        <GPSTrackingPage />
+      </div>
+    );
+  }
+  if (pillarSlug === "logistics-fleet" && moduleSlug === "driver-management") {
+    return (
+      <div className="max-w-7xl mx-auto pb-20">
+        <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
+          <span className="hover:text-slate-800 transition-colors cursor-pointer" onClick={() => window.history.back()}>Dashboard</span>
+          <span>/</span>
+          <span className="text-slate-900 font-semibold">Driver Management</span>
+        </div>
+        <DriverManagementPage />
+      </div>
+    );
+  }
+  if (pillarSlug === "logistics-fleet" && moduleSlug === "route-optimization") {
+    return (
+      <div className="max-w-7xl mx-auto pb-20">
+        <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
+          <span className="hover:text-slate-800 transition-colors cursor-pointer" onClick={() => window.history.back()}>Dashboard</span>
+          <span>/</span>
+          <span className="text-slate-900 font-semibold">Route Optimization</span>
+        </div>
+        <RouteOptimizationPage />
+      </div>
+    );
+  }
+  if (pillarSlug === "logistics-fleet" && moduleSlug === "fuel-management") {
+    return (
+      <div className="max-w-7xl mx-auto pb-20">
+        <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
+          <span className="hover:text-slate-800 transition-colors cursor-pointer" onClick={() => window.history.back()}>Dashboard</span>
+          <span>/</span>
+          <span className="text-slate-900 font-semibold">Fuel Management</span>
+        </div>
+        <FuelManagementPage />
+      </div>
+    );
+  }
+  if (pillarSlug === "logistics-fleet" && moduleSlug === "delivery-tracking") {
+    return (
+      <div className="max-w-7xl mx-auto pb-20">
+        <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
+          <span className="hover:text-slate-800 transition-colors cursor-pointer" onClick={() => window.history.back()}>Dashboard</span>
+          <span>/</span>
+          <span className="text-slate-900 font-semibold">Delivery Tracking</span>
+        </div>
+        <DeliveryTrackingPage />
+      </div>
+    );
+  }
+  if (pillarSlug === "logistics-fleet" && moduleSlug === "shipment-management") {
+    return (
+      <div className="max-w-7xl mx-auto pb-20">
+        <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
+          <span className="hover:text-slate-800 transition-colors cursor-pointer" onClick={() => window.history.back()}>Dashboard</span>
+          <span>/</span>
+          <span className="text-slate-900 font-semibold">Shipment Management</span>
+        </div>
+        <ShipmentManagementPage />
+      </div>
+    );
+  }
+  if (pillarSlug === "logistics-fleet" && moduleSlug === "logistics-analytics") {
+    return (
+      <div className="max-w-7xl mx-auto pb-20">
+        <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
+          <span className="hover:text-slate-800 transition-colors cursor-pointer" onClick={() => window.history.back()}>Dashboard</span>
+          <span>/</span>
+          <span className="text-slate-900 font-semibold">Logistics Analytics</span>
+        </div>
+        <LogisticsAnalyticsPage />
       </div>
     );
   }
@@ -1647,18 +1763,27 @@ export default function ModulePage({
             </div>
             <div className="p-4 overflow-y-auto flex-1 space-y-4">
               {moduleConfig.columns.map((col, i) => {
-                const isIdField = ["id", "sku"].includes(col.key.toLowerCase()) || 
+                const isIdField = (["id", "sku"].includes(col.key.toLowerCase()) || 
                                   col.key.toLowerCase().endsWith("no") || 
                                   col.key.toLowerCase().endsWith("code") || 
                                   col.label.toLowerCase().includes(" id") || 
-                                  col.label.toLowerCase().includes(" no");
+                                  col.label.toLowerCase().includes(" no")) &&
+                                  !(pillarSlug === "logistics-fleet" && col.key === "plate");
                 const isPhoneField = col.key.toLowerCase().includes("phone") || col.label.toLowerCase().includes("phone");
                 const isEmployeeField = col.type === "avatar" && (col.key.toLowerCase() === "employee" || col.label.toLowerCase() === "employee");
-                const isProductField = pillarSlug === "inventory-warehouse" &&
+                const isProductField = (pillarSlug === "inventory-warehouse" || pillarSlug === "manufacturing") &&
                   col.key.toLowerCase() === "product";
                 const isWarehouseField = pillarSlug === "inventory-warehouse" &&
                   col.key.toLowerCase() === "warehouse";
-                const isViewOnly = modalMode === "view" || isIdField;
+                const isMachineField = pillarSlug === "manufacturing" &&
+                  col.key.toLowerCase() === "machine";
+                // Computed fields that are display-only and should not be editable
+                const COMPUTED_FIELDS = new Set([
+                  'itemsCount', 'prismaId', 'remainingDays', 'leaveBalances',
+                  'planNo', 'qty', 'produced',
+                ]);
+                const isComputedField = COMPUTED_FIELDS.has(col.key);
+                const isViewOnly = modalMode === "view" || isIdField || isComputedField;
                 const isDateField = col.type === "date";
                 // Format ISO date string to YYYY-MM-DD for <input type="date">
                 const dateValue = isDateField && formData[col.key]
@@ -1676,6 +1801,18 @@ export default function ModulePage({
                             [col.key]: name,
                             ...(productId ? { productId } : {}),
                             ...(productSku ? { sku: productSku } : {}),
+                          }));
+                        }}
+                        disabled={isViewOnly}
+                      />
+                    ) : isMachineField ? (
+                      <MachineAutocomplete
+                        value={formData[col.key] || ""}
+                        onChange={(name, machineId) => {
+                          setFormData((prev: any) => ({
+                            ...prev,
+                            [col.key]: name,
+                            ...(machineId ? { machineId } : {}),
                           }));
                         }}
                         disabled={isViewOnly}
@@ -1829,6 +1966,13 @@ export default function ModulePage({
                           <div className="mt-1.5 text-xs text-slate-400">Select an employee to see remaining balance</div>
                         )}
                       </div>
+                    ) : col.key === "itemsCount" && moduleSlug === "bills-of-materials-bom" ? (
+                      <BomItemsEditor
+                        items={formData.items || []}
+                        onChange={(newItems) => setFormData((prev: any) => ({ ...prev, items: newItems }))}
+                        onTotalCostChange={(total) => setFormData((prev: any) => ({ ...prev, totalCost: total }))}
+                        disabled={modalMode === "view"}
+                      />
                     ) : (
                       <input
                         type={isDateField ? "date" : col.type === "number" || col.type === "currency" ? "number" : "text"}

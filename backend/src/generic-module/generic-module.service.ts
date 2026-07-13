@@ -89,7 +89,14 @@ export class GenericModuleService {
       case 'project-management::projects': return this.prisma.project;
 
       // ── DOCUMENT MANAGEMENT ──────────────────────────────────────
-      case 'document-management::documents': return this.prisma.document;
+            case 'document-management::documents':
+      case 'document-management::file-storage': return this.prisma.document;
+      case 'document-management::version-control': return this.prisma.documentVersion;
+      case 'document-management::ocr': return this.prisma.ocrRecord;
+      case 'document-management::ai-document-search':
+      case 'document-management::pdf-generation': return this.prisma.document;
+      case 'document-management::digital-signatures': return this.prisma.digitalSignature;
+      case 'document-management::templates': return this.prisma.documentTemplate;
 
       // ── MARKETING ────────────────────────────────────────────────
       case 'marketing::campaigns': return this.prisma.marketingCampaign;
@@ -1520,6 +1527,24 @@ export class GenericModuleService {
     }));
   }
 
+  async searchMachines(companyId: string, query: string): Promise<any[]> {
+    if (!companyId) {
+      const firstCompany = await this.prisma.company.findFirst();
+      companyId = firstCompany?.id ?? '';
+    }
+    return this.prisma.machine.findMany({
+      where: {
+        companyId,
+        OR: [
+          { name: { contains: query, mode: 'insensitive' } },
+          { machineNo: { contains: query, mode: 'insensitive' } },
+          { model: { contains: query, mode: 'insensitive' } },
+        ],
+      },
+      select: { id: true, name: true, machineNo: true, model: true, status: true, location: true },
+    });
+  }
+
   async searchEmployees(companyId: string, query: string): Promise<any[]> {
     if (!companyId) {
       const firstCompany = await this.prisma.company.findFirst();
@@ -1948,6 +1973,32 @@ export class GenericModuleService {
       appliedModules,
       created,
     };
+  }
+
+  /**
+   * Parse a human-readable size string (e.g. "1.2 MB", "500 KB", "2 GB")
+   * back into bytes (Int) for Prisma Int columns.
+   * If size is already a number, returns as-is. If absent/empty, returns 0.
+   */
+  private parseDocSize(data: any, pillarSlug: string): any {
+    if (pillarSlug !== 'document-management') return data;
+    const size = data.size;
+    if (size === undefined || size === null || size === '') {
+      data.size = 0;
+    } else if (typeof size === 'number') {
+      // Already bytes — keep as-is
+    } else if (typeof size === 'string') {
+      const match = size.trim().match(/^([\d.]+)\s*(B|KB|MB|GB|TB)?$/i);
+      if (match) {
+        const num = parseFloat(match[1]);
+        const unit = (match[2] || 'B').toUpperCase();
+        const multipliers = { B: 1, KB: 1024, MB: 1024 * 1024, GB: 1024 * 1024 * 1024, TB: 1024 * 1024 * 1024 * 1024 };
+        data.size = Math.round(num * (multipliers[unit] || 1));
+      } else {
+        data.size = 0;
+      }
+    }
+    return data;
   }
 
   async createData(pillarSlug: string, moduleSlug: string, companyId: string, data: any): Promise<any> {
@@ -2649,7 +2700,22 @@ export class GenericModuleService {
         return delegate.create({ data: { name: rest.name || '', productId: rest.product || '', version: rest.version || '1.0', totalCost: Number(rest.totalCost) || 0, status: rest.status || 'ACTIVE', companyId } });
       }
     }
-    return delegate.create({ data: { ...this.stripDisplayFields(this.normalizeEnumFields(pillarSlug, moduleSlug, this.convertDateStrings(this.normalizeBooleanFields(data)))), companyId } });
+        const cleaned = this.stripDisplayFields(this.normalizeEnumFields(pillarSlug, moduleSlug, this.convertDateStrings(this.normalizeBooleanFields(this.parseDocSize(data, pillarSlug)))));
+    // Strip computed display fields specific to document management
+    if (pillarSlug === "document-management") {
+      delete cleaned.name;
+      delete cleaned.type;
+      delete cleaned.modified;
+      // Only Document and DocumentVersion have a 'size' field
+      if (delegate !== this.prisma.document && delegate !== this.prisma.documentVersion) {
+        delete cleaned.size;
+      }
+      // DigitalSignature has document as a relation field (documentId), not a string
+      if (delegate === this.prisma.digitalSignature) {
+        delete cleaned.document;
+      }
+    }
+    return delegate.create({ data: { ...cleaned, companyId } });
   }
 
   /**
@@ -3257,7 +3323,21 @@ export class GenericModuleService {
       }
     }
     // Normalise enum fields, strip display-only fields, and convert dates
-    const cleaned = this.stripDisplayFields(this.normalizeEnumFields(pillarSlug, moduleSlug, this.convertDateStrings(this.normalizeBooleanFields(data))));
+    const cleaned = this.stripDisplayFields(this.normalizeEnumFields(pillarSlug, moduleSlug, this.convertDateStrings(this.normalizeBooleanFields(this.parseDocSize(data, pillarSlug)))));
+    // Strip computed display fields specific to document management
+    if (pillarSlug === "document-management") {
+      delete cleaned.name;
+      delete cleaned.type;
+      delete cleaned.modified;
+      // Only Document and DocumentVersion have a 'size' field
+      if (delegate !== this.prisma.document && delegate !== this.prisma.documentVersion) {
+        delete cleaned.size;
+      }
+      // DigitalSignature has document as a relation field (documentId), not a string
+      if (delegate === this.prisma.digitalSignature) {
+        delete cleaned.document;
+      }
+    }
         // ── BUDGETING: Strip status (display-only, not a DB field) ─────────
     if (pillarSlug === "finance-accounting" && moduleSlug === "budgeting") {
       const { status, ...budgetData } = data;

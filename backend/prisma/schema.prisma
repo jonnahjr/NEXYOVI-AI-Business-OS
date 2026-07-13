@@ -42,8 +42,16 @@ model Company {
 
   // MEGA EXPANSION:
   projects     Project[]
+  sprints              Sprint[]
+  resourceAllocations  ResourceAllocation[]
+  projectTimeEntries   ProjectTimeEntry[]
   documents    Document[]
+  ocrRecords   OcrRecord[]
+  documentVersions   DocumentVersion[]
+  digitalSignatures  DigitalSignature[]
+  documentTemplates  DocumentTemplate[]
   workOrders   WorkOrder[]
+  tasks        Task[]
   machines             Machine[]
   maintenanceRecords   MaintenanceRecord[]
   qualityChecks        QualityCheck[]
@@ -859,6 +867,9 @@ model Project {
   companyId   String
   company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
   tasks       Task[]
+  sprints     Sprint[]
+  resourceAllocations  ResourceAllocation[]
+  timeEntries          ProjectTimeEntry[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 }
@@ -878,9 +889,12 @@ model Task {
   status      TaskStatus @default(TODO)
   priority    Priority   @default(MEDIUM)
   dueDate     DateTime?
-  projectId   String
-  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String?
+  project     Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
   assigneeId  String?
+  companyId   String
+  company     Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  timeEntries ProjectTimeEntry[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
@@ -899,20 +913,149 @@ enum Priority {
   URGENT
 }
 
+// ── SPRINT (for Scrum & Sprint Planning) ─────────────────────────────
+model Sprint {
+  id          String   @id @default(uuid())
+  name        String
+  goal        String?
+  startDate   DateTime?
+  endDate     DateTime?
+  totalPoints Int      @default(0)
+  donePoints  Int      @default(0)
+  status      String   @default("PLANNING") // PLANNING, ACTIVE, COMPLETED
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ── RESOURCE ALLOCATION (for Resource Allocation module) ────────────
+model ResourceAllocation {
+  id          String   @id @default(uuid())
+  personName  String
+  role        String?
+  allocation  Float    @default(100) // percentage 0-100%
+  rate        Float    @default(0)   // hourly rate in ETB
+  status      String   @default("Active")
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ── PROJECT TIME ENTRY (for Time Tracking module) ────────────────────
+model ProjectTimeEntry {
+  id          String   @id @default(uuid())
+  personName  String
+  date        DateTime @default(now())
+  hours       Float    @default(0)
+  billable    Float    @default(0)
+  description String?
+  status      String   @default("Draft") // Draft, Submitted, Approved
+  taskId      String?
+  task        Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 // ============================================================
 // DOCUMENTS & KNOWLEDGE
 // ============================================================
 model Document {
-  id        String   @id @default(uuid())
-  title     String
-  fileUrl   String
-  fileType  String
-  size      Int      @default(0)
-  category  String?
-  companyId String
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(uuid())
+  title          String
+  fileUrl        String?
+  fileType       String
+  size           Int      @default(0)
+  category       String?
+  owner          String?
+  status         String   @default("Draft") // Draft, Final, Signed, Pending Signature, Archived, Under Review
+  version        Int      @default(1)
+  tags           String?
+  extractedText  String?
+  confidence     Float?
+  lastIndexed    DateTime?
+  referenceType  String?  // "customer", "employee", "project", "deal", "invoice", "contract", etc.
+  referenceId    String?  // UUID of the linked entity
+  companyId      String
+  company        Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  versions       DocumentVersion[]
+  signatures     DigitalSignature[]
+      createdAt      DateTime @default(now())
+      updatedAt      DateTime @updatedAt
+    }
+
+model OcrRecord {
+  id             String   @id @default(uuid())
+  document       String
+  fileType       String   @default("PDF")
+  language       String?
+  confidence     Float?
+  pages          Int?
+  extractedText  String?
+  status         String   @default("Pending")
+  companyId      String
+  company        Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model DocumentVersion {
+  id           String   @id @default(uuid())
+  documentId   String?
+  document     Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  version      Int      @default(1)
+  fileUrl      String?
+  fileType     String?
+  size         Int      @default(0)
+  changeLog    String?
+  createdBy    String?
+  status       String   @default("Draft")
+  approvedBy   String?
+  tags         String?
+  companyId    String
+  company      Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+}
+
+model DigitalSignature {
+  id             String   @id @default(uuid())
+  requestName    String
+  documentId     String?
+  document       Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  signerName     String?
+  signerEmail    String?
+  signedBy       String?
+  status         String   @default("Pending") // Pending, Signed, Declined, Expired
+  signedAt       DateTime?
+  certificateRef String?
+  notes          String?
+  companyId      String
+  company        Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model DocumentTemplate {
+  id          String   @id @default(uuid())
+  name        String
+  category    String   @default("General")
+  description String?
+  content     String?  // Template content/markup
+  fileUrl     String?
+  variables   String?  // JSON list of template variables
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // ============================================================
@@ -968,8 +1111,8 @@ model MaintenanceRecord {
   cost        Float    @default(0)
   technician  String?
   status      String   @default("PLANNED") // PLANNED, IN_PROGRESS, COMPLETED, CANCELLED
-  machineId   String
-  machine     Machine  @relation(fields: [machineId], references: [id])
+  machineId   String?
+  machine     Machine? @relation(fields: [machineId], references: [id])
   companyId   String
   company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
@@ -1064,6 +1207,8 @@ model Vehicle {
   status      VehicleStatus @default(AVAILABLE)
   fuelType    String?
   mileage     Float         @default(0)
+  driver      String?
+  nextService DateTime?
   companyId   String
   company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
   trips       Trip[]
