@@ -5,3 +5,8 @@ build/
 .env.local
 .DS_Store
 nul
+*.log
+backend/uploads/
+*.js
+!frontend/next.config.js
+!eslint.config.mjs
