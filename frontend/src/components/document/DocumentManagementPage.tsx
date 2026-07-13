@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
-  FileDown, Search as SearchIcon, Upload, X,
-  Download, Eye, Pencil, Trash2,
-  Filter, RefreshCw,
+  FileDown, Search as SearchIcon, X,
+  Eye, Pencil, Trash2,
+  RefreshCw,
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -88,15 +88,6 @@ const TAB_FIELDS: Record<TabId, FieldDef[]> = {
     { key: "status", label: "Status", type: "select", options: ["Draft", "Generated"] },
   ],
 };
-
-// ── DATE HELPERS ─────────────────────────────────────────
-function fmtDate(date: Date, style: "full" | "long" | "short" = "long"): string {
-  return date.toLocaleString("en-US", { dateStyle: style, timeStyle: "short" });
-}
-
-function fmtDateOnly(date: Date): string {
-  return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-}
 
 // ── DOCUMENT SELECTOR (for Digital Signature form) ──────
 function DocumentSelector({
@@ -278,33 +269,6 @@ export default function DocumentManagementPage({ pillarSlug, moduleSlug }: Docum
   // Batch selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   useEffect(() => { setSelectedIds(new Set()); }, [activeTab]);
-
-  // Upload state
-  const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadCategory, setUploadCategory] = useState("General");
-  const [uploadTags, setUploadTags] = useState("");
-  const [isDragOver, setIsDragOver] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Form-level file upload state
-  const [formUploadFile, setFormUploadFile] = useState<File | null>(null);
-  const [formUploading, setFormUploading] = useState(false);
-  const [formUploadProgress, setFormUploadProgress] = useState(0);
-  const formUploadInputRef = useRef<HTMLInputElement>(null);
-
-  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-  const fileSizeTooLarge = useMemo(() => uploadFile ? uploadFile.size > MAX_FILE_SIZE : false, [uploadFile]);
-  const fileSizePercent = useMemo(() => uploadFile ? Math.min(100, Math.round((uploadFile.size / MAX_FILE_SIZE) * 100)) : 0, [uploadFile]);
-
-  const formatFileSize = useCallback((bytes: number) => {
-    if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
-    if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-    if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${bytes} B`;
-  }, []);
 
   const activeTabDef = TABS.find(t => t.id === activeTab)!;
 
